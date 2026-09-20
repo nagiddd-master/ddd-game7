@@ -1,0 +1,1781 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ディバイン・デザイン・デストラクション（DDD）</title>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+:root{
+  --bg:#0f1117;--panel:#171b24;--panel2:#1d2330;--line:#313a4c;--text:#eef2f8;--muted:#9eabbd;--accent:#ffd36e;
+  --danger:#ff7d7d;--heal:#7ce7aa;--def:#82b4ff;--chaos:#c993ff;--support:#ffb6f2;--holy:#ffe7a4;--shadow:#b496ff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at top,#1b2130 0,#0f1117 58%);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+button,input{font:inherit}
+.wrap{max-width:1320px;margin:auto;padding:16px}
+h1{margin:0 0 4px;font-size:30px}.sub{color:var(--muted);margin-bottom:16px;line-height:1.55}
+.grid{display:grid;grid-template-columns:430px 1fr;gap:14px;align-items:start}.panel{background:rgba(23,27,36,.94);border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 14px 40px rgba(0,0,0,.24)}.section{margin-top:14px}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.small{font-size:12px;color:var(--muted);line-height:1.5}
+.btn{border:0;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}.btn:disabled{opacity:.45;cursor:not-allowed}.primary{background:var(--accent);color:#17120a}.secondary{background:#2b3342;color:var(--text);border:1px solid #435068}.danger{background:#3a252b;color:#ffd8d8;border:1px solid #6b3b44}
+.input{width:100%;background:#10141d;border:1px solid #3a4559;border-radius:12px;padding:10px 12px;color:var(--text)}.note{padding:10px 12px;background:#111722;border:1px solid #37435a;border-radius:14px;color:#d5deeb;font-size:13px;line-height:1.5}.status{padding:10px 12px;border:1px solid #3a4559;border-radius:12px;background:#111722;color:#dce5f2}.code{font-size:22px;font-weight:900;letter-spacing:.08em;color:var(--accent);word-break:break-all}.ready{color:#93f3b8;font-weight:900}.wait{color:#ffd36e;font-weight:900}.lobby{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}.swatch{width:28px;height:28px;border-radius:999px;border:2px solid rgba(255,255,255,.2);cursor:pointer}.swatch.active{outline:2px solid var(--accent);outline-offset:2px}
+.canvasWrap{background:#0d1117;border:1px solid #38445a;border-radius:16px;padding:10px;touch-action:none}.canvasWrap.locked{opacity:.75;border-color:#5a667b}.canvasWrap canvas{display:block;width:100%;aspect-ratio:1/1;background:#fff;border-radius:12px;touch-action:none}
+.typeTabs{display:grid;grid-template-columns:1fr 1fr;gap:8px}.typeBtn{padding:12px 10px;border-radius:14px;border:1px solid #40506c;background:#232c3d;color:#dce5f2;font-weight:900;cursor:pointer}.typeBtn.active.monster{background:#332b18;border-color:#8a6a22;color:#ffe7a4}.typeBtn.active.support{background:#33243a;border-color:#7f4e88;color:#ffd6fb}
+.pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:900}.pill.monster{background:rgba(255,211,110,.14);color:#ffe7a4;border:1px solid rgba(255,211,110,.28)}.pill.support{background:rgba(255,182,242,.14);color:#ffd6fb;border:1px solid rgba(255,182,242,.28)}
+.timerBox{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.timer{font-size:28px;font-weight:1000;color:var(--accent)}.timer.danger{color:#ff8d8d}.previewBox{min-height:220px;border:1px dashed #44516a;border-radius:16px;background:#101621;padding:10px}
+.countBox{display:flex;gap:10px;flex-wrap:wrap}.countChip{padding:8px 10px;border-radius:999px;background:#222a38;border:1px solid #3a4559;font-weight:800;color:#dce6f4}
+.battleTop{display:grid;grid-template-columns:1fr 1fr;gap:12px}.fighter{background:var(--panel2);border:1px solid #344056;border-radius:16px;padding:14px}.name{display:flex;justify-content:space-between;font-weight:900}.hpbar{height:18px;background:#252d3a;border-radius:999px;overflow:hidden;margin-top:10px;border:1px solid #344056}.fill{height:100%;background:linear-gradient(90deg,#ff7575,#ffb176);transition:width .35s ease}.stats{display:flex;justify-content:space-between;margin-top:8px;color:var(--muted);font-size:14px}
+.roundBox{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0}.round{font-size:20px;font-weight:900;color:var(--accent)}.phase{font-weight:900}
+.clash{display:grid;grid-template-columns:1fr 80px 1fr;gap:12px;align-items:start}.vs{text-align:center;font-size:24px;font-weight:1000;color:var(--accent);padding-top:110px}
+.card{position:relative;background:linear-gradient(180deg,#232b39,#1a202b);border:1px solid #3a4558;border-radius:16px;overflow:hidden;color:var(--text);min-height:255px}.card.supportCard{border-color:#604466;box-shadow:inset 0 0 0 1px rgba(255,182,242,.12)}
+.thumb{aspect-ratio:1/1;background:#fff;border-bottom:1px solid #334056;overflow:hidden}.thumb img{width:100%;height:100%;object-fit:cover;display:block}.meta{padding:10px}.title{font-weight:900;font-size:16px;margin-bottom:5px}.badge{display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:900;margin-bottom:6px}.attack{background:rgba(255,125,125,.16);color:#ffc6c6;border:1px solid rgba(255,125,125,.35)}.defend{background:rgba(130,180,255,.16);color:#cfe2ff;border:1px solid rgba(130,180,255,.35)}.heal{background:rgba(124,231,170,.16);color:#d3ffe6;border:1px solid rgba(124,231,170,.35)}.chaos{background:rgba(201,147,255,.16);color:#efd8ff;border:1px solid rgba(201,147,255,.35)}.supportBadge{background:rgba(255,182,242,.16);color:#ffe0fb;border:1px solid rgba(255,182,242,.35)}
+.score{position:absolute;top:8px;right:8px;background:rgba(9,11,15,.75);padding:4px 8px;border-radius:999px;font-size:11px;font-weight:900}.desc{font-size:12px;color:#bdc8d8;min-height:40px;line-height:1.45}.nums{display:flex;gap:8px;flex-wrap:wrap;margin-top:7px;font-size:12px}.hiddenCard{min-height:255px;border:1px dashed #4a576e;border-radius:16px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);padding:20px;background:#121824}
+.log{background:#0f141c;border:1px solid #313d51;border-radius:16px;padding:10px;min-height:170px;max-height:320px;overflow:auto}.logline{padding:7px 0;border-bottom:1px dashed #2b3648;font-size:14px}.banner{display:none;margin-top:12px;padding:12px;border-radius:14px;text-align:center;font-weight:900;background:#2a2130;border:1px solid #5a3e67}.banner.show{display:block}.banner.resultWin{font-size:clamp(30px,5vw,58px)!important;color:#ffe57d;border:2px solid rgba(255,226,119,.75);background:radial-gradient(circle at 50% 40%,rgba(255,220,100,.22),rgba(34,24,13,.96));box-shadow:0 0 34px rgba(255,214,87,.32),inset 0 0 28px rgba(255,232,155,.08);text-shadow:0 0 20px rgba(255,220,110,.5);letter-spacing:.08em}.banner.resultLose{font-size:clamp(30px,5vw,58px)!important;color:#ff9ca7;border:2px solid rgba(255,112,130,.72);background:radial-gradient(circle at 50% 40%,rgba(255,80,100,.18),rgba(35,12,18,.96));box-shadow:0 0 34px rgba(255,72,96,.25),inset 0 0 28px rgba(255,140,155,.06);text-shadow:0 0 20px rgba(255,90,110,.42);letter-spacing:.08em}.banner.resultDraw{font-size:clamp(28px,4vw,50px)!important;color:#d9e2f0;border:2px solid rgba(190,205,230,.5);background:radial-gradient(circle at 50% 40%,rgba(180,200,235,.13),rgba(18,22,31,.96));letter-spacing:.08em}.submitState{margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid #3a4559;background:#111722}
+.typeLine{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}.typeMini{padding:2px 8px;border-radius:999px;font-size:11px;font-weight:900;background:#2a3344;border:1px solid #41506a;color:#dce4f0}
+.eventBox{padding:10px 12px;border-radius:14px;background:#16101f;border:1px solid #55386c;color:#f1ddff;font-weight:800}
+.effectLayer{position:fixed;inset:0;display:none;align-items:center;justify-content:center;pointer-events:none;z-index:50;background:radial-gradient(circle, rgba(255,255,255,0.05), rgba(0,0,0,0.35))}.effectLayer.show{display:flex;animation:flashWrap .85s ease}.effectText{font-size:min(11vw,68px);font-weight:1000;letter-spacing:.06em;text-transform:uppercase;color:#fff;text-shadow:0 0 25px rgba(255,255,255,.4), 0 0 48px rgba(255,210,110,.35);padding:18px 30px;border-radius:20px;border:2px solid rgba(255,255,255,.2);background:rgba(10,12,18,.66);backdrop-filter:blur(5px);transform:scale(.85);animation:pop .85s ease}.effectText.chaos{box-shadow:0 0 35px rgba(201,147,255,.4);color:#f0dbff}.effectText.win{box-shadow:0 0 35px rgba(255,211,110,.4);color:#ffe7a4}.effectText.hit{box-shadow:0 0 35px rgba(255,125,125,.4);color:#ffd2d2}.effectText.event{box-shadow:0 0 35px rgba(130,180,255,.4);color:#d6e4ff}
+@keyframes pop{0%{transform:scale(.7);opacity:0}25%{transform:scale(1.08);opacity:1}100%{transform:scale(1);opacity:1}}@keyframes flashWrap{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
+
+.element{display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:900;margin-left:6px;background:#1b2330;border:1px solid #41506a;color:#dce7f6}.fxOverlay{position:fixed;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;z-index:9999;opacity:0;transition:opacity .2s}.fxOverlay.show{opacity:1}.fxText{font-size:clamp(44px,9vw,110px);font-weight:1000;text-shadow:0 6px 24px rgba(0,0,0,.55);animation:popfx .8s ease both}.fxText.win{color:#ffe57d}.fxText.lose{color:#ff8d9a}.fxText.draw{color:#c7d0df}@keyframes popfx{0%{transform:scale(.4) rotate(-8deg);opacity:0}55%{transform:scale(1.15) rotate(2deg);opacity:1}100%{transform:scale(1);opacity:1}}.shake{animation:shake .35s linear}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}}.flash{animation:flash .45s ease}@keyframes flash{0%{filter:brightness(1)}50%{filter:brightness(2)}100%{filter:brightness(1)}}
+@media(max-width:980px){.grid{grid-template-columns:1fr}.lobby,.battleTop,.clash{grid-template-columns:1fr}.vs{padding-top:0}.wrap{padding:12px}}
+
+.audioDock{position:fixed;right:14px;top:14px;z-index:90;display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid rgba(255,211,110,.35);border-radius:999px;background:rgba(8,10,18,.82);box-shadow:0 8px 30px rgba(0,0,0,.35),inset 0 0 18px rgba(167,116,255,.08);backdrop-filter:blur(12px)}
+.audioDock .audioBtn{border:1px solid rgba(255,211,110,.45);border-radius:999px;padding:7px 11px;background:linear-gradient(180deg,#382f1e,#211b13);color:#ffe8a8;font-size:12px;font-weight:900;cursor:pointer;letter-spacing:.04em}.audioDock .audioBtn.on{box-shadow:0 0 14px rgba(255,211,110,.35)}
+.audioDock input[type=range]{width:84px;accent-color:#ffd36e}.audioDock .vol{font-size:11px;color:#cfd6e5;font-weight:800}
+@media(max-width:700px){.audioDock{position:relative;right:auto;top:auto;margin:0 0 12px auto;width:max-content}.audioDock input[type=range]{width:68px}}
+
+
+/* ===== TITLE MENU ===== */
+.titleMenu{position:fixed;inset:0;z-index:5000;display:grid;place-items:center;overflow:auto;padding:24px;background:linear-gradient(90deg,rgba(5,6,11,.72),rgba(8,7,14,.35) 48%,rgba(13,4,20,.68)),linear-gradient(0deg,rgba(5,6,11,.42),rgba(5,6,11,.28)),url("./竜と魔神_終焉の空中決戦.png") center/cover no-repeat}.titleMenu.hidden{display:none}.menuShell{width:min(920px,100%);display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:34px;align-items:center;padding:34px;border:1px solid rgba(255,222,132,.28);border-radius:30px;background:linear-gradient(120deg,rgba(10,10,18,.72),rgba(18,10,29,.6));backdrop-filter:blur(9px);box-shadow:0 30px 100px rgba(0,0,0,.55),inset 0 1px rgba(255,255,255,.05)}.menuBrand .kicker{font-size:11px;letter-spacing:.33em;color:#c9a9ff;font-weight:1000}.menuBrand h1{font-family:Georgia,serif;font-size:clamp(42px,6vw,78px);line-height:.88;margin:10px 0 14px;color:#fff6d6;text-shadow:0 8px 30px rgba(0,0,0,.65)}.menuBrand h1 span{display:block;color:transparent;background:linear-gradient(90deg,#ffe89d,#dcae4c 45%,#d7b2ff);-webkit-background-clip:text;background-clip:text}.menuBrand p{max-width:560px;color:#d8d3e4;line-height:1.7}.menuLogo{font-family:Georgia,serif;font-size:18px;letter-spacing:.35em;color:#f0cf74;font-weight:900}.menuButtons{display:grid;gap:11px}.menuBtn{position:relative;overflow:hidden;text-align:left;border:1px solid rgba(255,225,146,.24);border-radius:16px;padding:16px 18px;background:linear-gradient(180deg,rgba(38,31,54,.9),rgba(14,16,26,.92));color:#f4effc;font-weight:1000;letter-spacing:.04em;cursor:pointer;transition:.18s transform,.18s filter,.18s border-color}.menuBtn:hover{transform:translateX(4px);filter:brightness(1.12);border-color:rgba(255,222,132,.48)}.menuBtn small{display:block;margin-top:3px;color:#9f96b0;font-size:9px;letter-spacing:.14em}.menuBtn.primaryMenu{background:linear-gradient(180deg,#5b421c,#271d10);color:#fff0b5}.menuBtn.onlineMenu{background:linear-gradient(180deg,#36254e,#181523)}.menuFooter{margin-top:14px;color:#9c94aa;font-size:10px;letter-spacing:.11em}.rulesModal{position:fixed;inset:0;z-index:5100;display:none;place-items:center;padding:20px;background:rgba(5,6,11,.78);backdrop-filter:blur(8px)}.rulesModal.show{display:grid}.rulesCard{width:min(760px,100%);max-height:82vh;overflow:auto;border:1px solid rgba(255,220,126,.28);border-radius:24px;padding:24px;background:linear-gradient(180deg,#171525,#0c0f18);box-shadow:0 30px 90px rgba(0,0,0,.6)}.rulesCard h2{font-family:Georgia,serif;color:#ffe69a}.rulesGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ruleItem{padding:12px;border:1px solid rgba(129,143,175,.18);border-radius:14px;background:rgba(255,255,255,.025);line-height:1.55;font-size:13px;color:#d8ddeb}.backTitle{position:fixed;left:16px;bottom:16px;z-index:1200;display:none}.backTitle.show{display:block}@media(max-width:760px){.menuShell{grid-template-columns:1fr;padding:24px}.menuBrand{text-align:center}.menuButtons{max-width:460px;width:100%;margin:auto}.rulesGrid{grid-template-columns:1fr}.titleMenu{padding:12px}.menuBrand h1{font-size:48px}}
+
+/* ===== Battle result hold / card vanish ===== */
+.cardVanish{animation:dddCardVanish 1.5s cubic-bezier(.4,0,.2,1) forwards;transform-origin:center}
+@keyframes dddCardVanish{0%{opacity:1;filter:brightness(1) saturate(1);transform:scale(1)}35%{opacity:1;filter:brightness(1.8) saturate(1.4);transform:scale(1.035)}100%{opacity:0;filter:brightness(2.8) blur(8px) saturate(.3);transform:scale(.72) rotate(2deg)}}
+
+/* ===== pre-battle showcase ===== */
+@keyframes showcasePulse{0%,100%{box-shadow:0 18px 45px rgba(0,0,0,.34),0 0 18px rgba(255,216,112,.12)}50%{box-shadow:0 22px 60px rgba(0,0,0,.5),0 0 42px rgba(255,216,112,.34),0 0 70px rgba(160,104,255,.16)}}
+.card.showcaseCard{animation:showcasePulse 1.7s ease-in-out infinite;border-color:rgba(255,224,139,.58);transform:translateY(-3px)}
+
+
+.battleReadyRow{display:none;justify-content:center;gap:10px;margin:14px 0 4px}.battleReadyRow.show{display:flex}.battleReadyBtn{min-width:260px;padding:15px 22px;border-radius:16px;border:1px solid rgba(255,220,126,.45);background:linear-gradient(180deg,#6a4d20,#30210e);color:#fff0b1;font-weight:1000;letter-spacing:.12em;font-size:16px;box-shadow:0 0 26px rgba(255,203,75,.12),inset 0 1px rgba(255,255,255,.12);cursor:pointer;transition:.18s}.battleReadyBtn:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.1)}.battleReadyBtn:disabled{opacity:.55;cursor:not-allowed}.battleReadyStatus{text-align:center;color:#c9bddf;font-size:12px;margin-top:7px;letter-spacing:.04em}
+
+/* ===== CARD GALLERY ===== */
+.galleryFavorite{display:block;width:100%;margin-top:8px;padding:9px;border-radius:10px;border:1px solid #716345;background:#161b29;color:#e1e5ed;cursor:pointer;font-weight:700}
+.galleryFavorite[aria-pressed="true"]{color:#ffe184;border-color:#e5bc54;background:#39301a}
+.galleryFavorite:focus-visible{outline:3px solid #ffe184;outline-offset:2px}
+.galleryDetailActions{flex-wrap:wrap}
+
+.galleryModal{position:fixed;inset:0;z-index:5200;display:none;place-items:center;padding:20px;background:rgba(5,6,11,.84);backdrop-filter:blur(10px)}
+.galleryModal.show{display:grid}.galleryCard{width:min(1100px,100%);max-height:86vh;overflow:auto;border:1px solid rgba(255,220,126,.3);border-radius:26px;padding:22px;background:linear-gradient(180deg,#171525,#0b0e17);box-shadow:0 30px 90px rgba(0,0,0,.62)}
+.galleryHead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}.galleryHead h2{margin:0;font-family:Georgia,serif;color:#ffe69a}.galleryGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}.galleryItem{cursor:pointer;min-width:0}.galleryItem .card{min-height:0;height:auto}.galleryMeta{padding:7px 3px 0;color:#9fabc0;font-size:11px;line-height:1.45}.galleryEmpty{padding:42px 18px;text-align:center;color:#9ba7ba;border:1px dashed rgba(133,148,182,.25);border-radius:18px}.galleryDetail{position:fixed;inset:0;z-index:5300;display:none;place-items:center;padding:20px;background:rgba(4,5,10,.88);backdrop-filter:blur(12px)}.galleryDetail.show{display:grid}.galleryDetailInner{width:min(520px,100%);max-height:88vh;overflow:auto}.galleryDetailActions{display:flex;justify-content:center;gap:10px;margin-top:12px}.menuBtn.galleryMenu{background:linear-gradient(180deg,#24384e,#111923)}
+@media(max-width:620px){.galleryGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.galleryCard{padding:14px}.galleryItem .title{font-size:14px}.galleryItem .desc{font-size:10px}}
+
+/* ===== ATTRIBUTE FINISH ATTACKS ===== */
+.attributeAttackFx{position:fixed;inset:0;z-index:9997;pointer-events:none;overflow:hidden;opacity:0;transition:opacity .12s ease}
+.attributeAttackFx.show{opacity:1}
+.attributeAttackFx .attackLabel{position:absolute;left:50%;top:18%;transform:translate(-50%,-50%);font-family:Georgia,serif;font-weight:1000;font-size:clamp(28px,5vw,64px);letter-spacing:.12em;color:#fff;text-shadow:0 4px 20px #000,0 0 38px currentColor;white-space:nowrap;opacity:0}.attributeAttackFx.show .attackLabel{animation:attackLabelPop 1.65s ease both}
+.attributeAttackFx .attackCore{position:absolute;top:50%;width:108px;height:108px;border-radius:50%;filter:blur(.3px);opacity:0}.attributeAttackFx.show .attackCore{animation:attackCoreMove 1.55s cubic-bezier(.18,.76,.27,1) both}
+.attributeAttackFx.from-left .attackCore{left:19%;--move:58vw}.attributeAttackFx.from-right .attackCore{right:19%;--move:-58vw}
+.attributeAttackFx .trail{position:absolute;top:50%;height:20px;width:55vw;transform:translateY(-50%) scaleX(0);transform-origin:left center;border-radius:999px;filter:blur(3px);opacity:0}.attributeAttackFx.show .trail{animation:trailGrow 1.15s ease-out .1s both}
+.attributeAttackFx.from-left .trail{left:20%}.attributeAttackFx.from-right .trail{right:20%;transform-origin:right center}
+.attributeAttackFx .impact{position:absolute;top:50%;width:160px;height:160px;border-radius:50%;transform:translate(-50%,-50%) scale(.1);opacity:0}.attributeAttackFx.show .impact{animation:impactBurst 1.05s ease-out .82s both}
+.attributeAttackFx.from-left .impact{left:78%}.attributeAttackFx.from-right .impact{left:22%}
+.attributeAttackFx .particle{position:absolute;width:12px;height:12px;border-radius:50%;opacity:0}.attributeAttackFx.show .particle{animation:particleFly 1.55s ease-out both}
+.attributeAttackFx.fire{background:radial-gradient(circle at 50% 55%,rgba(255,89,0,.13),transparent 42%)}
+.attributeAttackFx.fire .attackCore{background:radial-gradient(circle,#fff7b0 0 12%,#ffb100 28%,#ff4d00 58%,rgba(130,0,0,.2) 72%);box-shadow:0 0 35px #ff5b00,0 0 80px rgba(255,60,0,.7)}
+.attributeAttackFx.fire .trail{background:linear-gradient(90deg,rgba(255,50,0,0),#ff6b00,#ffd35a,#fff2b0)}
+.attributeAttackFx.fire .impact{background:radial-gradient(circle,#fff7b2 0 10%,#ffb000 22%,#ff3500 48%,transparent 72%);box-shadow:0 0 70px #ff4d00}
+.attributeAttackFx.water{background:radial-gradient(circle at 50% 55%,rgba(0,143,255,.13),transparent 42%)}
+.attributeAttackFx.water .attackCore{background:radial-gradient(circle,#eaffff,#56ddff 30%,#0578ff 64%,rgba(0,35,120,.18));box-shadow:0 0 38px #27bfff,0 0 85px rgba(0,99,255,.55)}
+.attributeAttackFx.water .trail{height:24px;background:linear-gradient(90deg,transparent,#0a73ff,#65e8ff,#e7ffff)}
+.attributeAttackFx.water .impact{border:12px solid rgba(80,220,255,.86);box-shadow:0 0 65px #00aaff,inset 0 0 30px #7be9ff}
+.attributeAttackFx.wind .attackCore{background:transparent;border:5px solid rgba(218,255,244,.9);box-shadow:0 0 35px #81ffd9}
+.attributeAttackFx.wind .trail{height:8px;background:linear-gradient(90deg,transparent,#79ffd1,#fff);box-shadow:0 -22px 0 rgba(174,255,228,.45),0 22px 0 rgba(174,255,228,.45);transform:translateY(-50%) skewX(-24deg) scaleX(0)}
+.attributeAttackFx.wind .impact{border:7px solid #baffea;box-shadow:0 0 62px #67ffd5;clip-path:polygon(50% 0,61% 38%,100% 50%,61% 62%,50% 100%,39% 62%,0 50%,39% 38%)}
+.attributeAttackFx.earth .attackCore{border-radius:18px;background:linear-gradient(145deg,#ffe096,#976120 45%,#39200e);box-shadow:0 0 34px #c88b37;transform:rotate(35deg)}
+.attributeAttackFx.earth .trail{height:30px;background:repeating-linear-gradient(90deg,transparent 0 18px,#bd833d 20px 30px,#5a3217 31px 42px);filter:none}
+.attributeAttackFx.earth .impact{border-radius:20%;background:conic-gradient(from 20deg,#ffdd82,#704118,#d99a43,#34200d,#f6c760);box-shadow:0 0 60px #bd7a2d}
+.attributeAttackFx.light{background:radial-gradient(circle at 50% 50%,rgba(255,249,190,.25),rgba(255,234,122,.04) 28%,transparent 58%)}
+.attributeAttackFx.light .attackCore{background:#fff;box-shadow:0 0 22px #fff,0 0 65px #fff2a4,0 0 120px #ffc94a}
+.attributeAttackFx.light .trail{height:10px;background:linear-gradient(90deg,transparent,#ffe87a,#fff);box-shadow:0 0 26px #fff,0 0 60px #ffda52}
+.attributeAttackFx.light .impact{background:#fff;box-shadow:0 0 40px #fff,0 0 100px #fff19b,0 0 180px #ffd33d}
+.attributeAttackFx.shadow{background:radial-gradient(circle at 50% 55%,rgba(111,0,190,.24),rgba(0,0,0,.38) 40%,transparent 70%)}
+.attributeAttackFx.shadow .attackCore{background:radial-gradient(circle,#c674ff 0 10%,#5d008f 38%,#050008 72%);box-shadow:0 0 38px #9d22e9,0 0 90px rgba(80,0,120,.9)}
+.attributeAttackFx.shadow .trail{height:28px;background:linear-gradient(90deg,transparent,#20002d,#7d00b4,#dc73ff);filter:blur(5px)}
+.attributeAttackFx.shadow .impact{background:radial-gradient(circle,#e0a0ff 0 4%,#6c009a 28%,#07000a 54%,transparent 72%);box-shadow:0 0 80px #8d13c9}
+.attributeAttackFx.thunder .attackCore{background:#fff9a8;box-shadow:0 0 32px #fff,0 0 90px #ffed3d}
+.attributeAttackFx.thunder .trail{height:13px;background:linear-gradient(90deg,transparent,#ffff63,#fff);clip-path:polygon(0 35%,34% 35%,40% 0,48% 62%,57% 22%,65% 67%,100% 46%,100% 65%,66% 78%,58% 35%,49% 78%,39% 18%,33% 56%,0 56%);filter:drop-shadow(0 0 12px #ffee2b)}
+.attributeAttackFx.thunder .impact{background:#fff;clip-path:polygon(50% 0,59% 35%,87% 13%,70% 42%,100% 50%,68% 58%,86% 87%,59% 66%,50% 100%,42% 65%,14% 87%,31% 58%,0 50%,32% 42%,14% 14%,42% 35%);box-shadow:0 0 70px #ffee28}
+.attributeAttackFx.neutral .attackCore{background:radial-gradient(circle,#fff,#bfc9da 40%,#5e6a80 68%);box-shadow:0 0 35px #dbe6ff}
+.attributeAttackFx.neutral .trail{background:linear-gradient(90deg,transparent,#8e9bae,#e8efff)}
+.attributeAttackFx.neutral .impact{border:9px solid rgba(225,235,255,.9);box-shadow:0 0 60px #d8e3ff}
+@keyframes attackCoreMove{0%{transform:translateY(-50%) scale(.35);opacity:0}15%{opacity:1}70%{transform:translate(var(--move),-50%) scale(1.15);opacity:1}100%{transform:translate(var(--move),-50%) scale(.4);opacity:0}}
+@keyframes trailGrow{0%{transform:translateY(-50%) scaleX(0);opacity:0}20%{opacity:1}75%{transform:translateY(-50%) scaleX(1);opacity:1}100%{transform:translateY(-50%) scaleX(1);opacity:0}}
+@keyframes impactBurst{0%{transform:translate(-50%,-50%) scale(.08);opacity:0}25%{opacity:1}70%{transform:translate(-50%,-50%) scale(1.8);opacity:.9}100%{transform:translate(-50%,-50%) scale(2.8);opacity:0}}
+@keyframes attackLabelPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.55)}28%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+@keyframes particleFly{0%{opacity:0;transform:translate(0,0) scale(.4)}18%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(0)}}
+@media (prefers-reduced-motion:reduce){.attributeAttackFx .attackCore,.attributeAttackFx .trail,.attributeAttackFx .impact,.attributeAttackFx .attackLabel,.attributeAttackFx .particle{animation-duration:.2s!important}}
+
+
+/* Active-match layout: keep the battle board at the top of the right column. */
+.arenaPanel.matchActive{display:flex;flex-direction:column}
+.arenaPanel.matchActive>.battleZone{order:-10;margin-top:0;margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid rgba(255,220,126,.16)}
+.arenaPanel.matchActive>.battleZone>h2{margin-top:0}
+.arenaPanel.matchActive>.battleZone .battleTop{margin-top:2px}
+@media(max-width:980px){.arenaPanel.matchActive>.battleZone{order:-10}}
+
+/* ===== EXPANDED DIVINE CANVAS ===== */
+.canvasZoomClose,.canvasZoomHint{display:none}
+#canvasZoomBtn{margin-left:auto}
+body.canvasZoomMode{overflow:hidden}
+body.canvasZoomMode::before{z-index:5998}
+.canvasWrap.zoomed{position:fixed!important;z-index:6000;inset:18px!important;margin:auto!important;width:min(860px,calc(100vw - 36px))!important;height:min(860px,calc(100dvh - 36px))!important;max-width:none!important;padding:58px 20px 20px!important;display:flex!important;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 45%,rgba(109,67,187,.18),transparent 52%),linear-gradient(145deg,#080b12,#171122)!important;border:1px solid rgba(255,218,112,.48)!important;border-radius:26px!important;box-shadow:0 0 0 9999px rgba(2,3,8,.88),0 30px 100px rgba(0,0,0,.8),0 0 55px rgba(177,108,255,.18)!important}
+.canvasWrap.zoomed::before{content:"DIVINE CANVAS · EXPANDED"!important;top:18px!important;left:22px!important;font-size:11px!important;padding:5px 11px!important}
+.canvasWrap.zoomed canvas{width:auto!important;height:auto!important;max-width:100%!important;max-height:100%!important;aspect-ratio:1/1;box-shadow:0 0 0 1px rgba(255,255,255,.9),0 0 60px rgba(255,209,96,.12)!important}
+.canvasWrap.zoomed .canvasZoomClose{display:block;position:absolute;right:18px;top:15px;z-index:3;border:1px solid rgba(255,225,153,.32);border-radius:999px;padding:8px 12px;background:rgba(20,17,30,.88);color:#fff0b5;font-weight:900;cursor:pointer}
+.canvasWrap.zoomed .canvasZoomHint{display:block;position:absolute;left:22px;bottom:14px;color:#9e96b2;font-size:10px;letter-spacing:.08em}
+@media(max-width:700px){.canvasWrap.zoomed{inset:8px!important;width:calc(100vw - 16px)!important;height:calc(100dvh - 16px)!important;padding:52px 10px 28px!important;border-radius:18px!important}.canvasWrap.zoomed .canvasZoomClose{right:10px;top:10px}}
+
+/* ===== LARGE CARD STATS ===== */
+.card .nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:10px;font-size:17px;font-weight:1000;line-height:1.15}
+.card .nums span{display:flex;align-items:center;justify-content:center;min-height:36px;padding:7px 6px;border:1px solid rgba(255,225,150,.20);border-radius:10px;background:rgba(5,8,14,.42);color:#fff3cc;white-space:nowrap}
+.card.supportCard .nums{grid-template-columns:1fr;font-size:19px}
+.card .typeLine{margin-top:8px}
+.card .typeMini{font-size:16px;padding:5px 10px;letter-spacing:.025em;color:#fff0bc;border-color:rgba(255,220,128,.35);background:rgba(43,39,54,.84)}
+.card .element{font-size:14px;padding:5px 10px;font-weight:1000;color:#fff1bd;border-color:rgba(255,220,128,.34)}
+@media(max-width:620px){.card .nums{font-size:15px;gap:5px}.card .nums span{min-height:32px;padding:6px 4px}.card .typeMini{font-size:14px}.card .element{font-size:13px}}
+/* Countdown sits immediately above the canvas label. */
+.drawCountdown{position:relative;z-index:10;display:flex;align-items:center;justify-content:center;gap:12px;width:max-content;max-width:100%;margin:0 auto 22px;padding:8px 20px;border:2px solid #ffe286;border-radius:14px;background:#101522;color:#fff3bb;box-shadow:0 4px 20px #0009;pointer-events:none;font:700 14px/1.1 system-ui,sans-serif}
+.drawCountdown strong{font-size:44px;font-variant-numeric:tabular-nums;min-width:3ch;text-align:center}
+.drawCountdown.danger{border-color:#ff667d;background:#45131e;color:#fff}
+.drawCountdown[hidden]{display:none}
+.canvasWrap.zoomed{padding-top:90px!important;padding-bottom:56px!important}
+.canvasWrap.zoomed::before{display:none!important}
+.canvasWrap.zoomed .drawCountdown{position:absolute;top:12px;left:14px;margin:0;padding:6px 12px}
+.canvasWrap.zoomed .canvasZoomClose{top:auto!important;bottom:12px;right:14px}
+.timer{font-family:system-ui,sans-serif;font-size:52px}
+@media(max-width:420px){.canvasWrap.zoomed .drawCountdown{gap:6px;font-size:11px;padding:7px 9px}.canvasWrap.zoomed .drawCountdown strong{font-size:34px}.canvasWrap.zoomed .canvasZoomClose{font-size:11px;padding:8px}}
+body.canvasZoomMode .drawCountdown{position:fixed;top:max(12px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:6100;margin:0}
+</style>
+
+<style>
+/* ===== DDD CINEMATIC SKIN ===== */
+body::before,body::after{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:-2}
+body::before{background:
+ radial-gradient(circle at 18% 15%,rgba(116,80,255,.18),transparent 24%),
+ radial-gradient(circle at 83% 18%,rgba(255,178,74,.13),transparent 23%),
+ radial-gradient(circle at 50% 85%,rgba(0,206,255,.10),transparent 28%),
+ repeating-linear-gradient(115deg,transparent 0 54px,rgba(255,255,255,.018) 55px 56px);
+animation:bgDrift 16s ease-in-out infinite alternate}
+body::after{inset:0;background:linear-gradient(180deg,rgba(255,255,255,.02),transparent 18%,transparent 80%,rgba(0,0,0,.28));z-index:-1}
+@keyframes bgDrift{from{transform:scale(1) rotate(0deg)}to{transform:scale(1.08) rotate(2deg)}}
+.wrap>h1{font-size:clamp(28px,4.3vw,52px);font-weight:1000;letter-spacing:.035em;line-height:1.05;text-transform:uppercase;background:linear-gradient(180deg,#fff8d9 0,#ffd777 42%,#a96b19 100%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 8px 34px rgba(255,190,58,.13);filter:drop-shadow(0 2px 0 rgba(255,255,255,.08))}
+.wrap>h1 span{display:inline-block;padding:.12em .35em;border:1px solid rgba(255,216,116,.32);border-radius:.45em;background:rgba(39,27,5,.42);box-shadow:0 0 24px rgba(255,190,58,.13);vertical-align:middle}
+.sub{max-width:1000px;font-size:13px;padding-left:3px}.panel{position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(24,30,43,.95),rgba(10,14,22,.96));border-color:rgba(126,149,190,.28);box-shadow:0 20px 70px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.035)}
+.panel::before{content:"";position:absolute;inset:0 0 auto;height:1px;background:linear-gradient(90deg,transparent,rgba(255,214,112,.7),transparent);opacity:.65}
+.panel h2{font-weight:950;letter-spacing:.035em}.note,.status,.submitState,.eventBox{backdrop-filter:blur(8px)}
+.btn{position:relative;overflow:hidden;letter-spacing:.02em;transition:.16s transform,.16s filter,.16s box-shadow}.btn:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.08)}.primary{background:linear-gradient(180deg,#ffe18b,#d89a2a);box-shadow:0 8px 20px rgba(221,159,43,.18),inset 0 1px 0 #fff1bb}.primary:hover:not(:disabled){box-shadow:0 10px 28px rgba(255,195,64,.28),0 0 18px rgba(255,211,110,.18)}
+.canvasWrap{position:relative;background:linear-gradient(145deg,#121a29,#090d15);border:1px solid rgba(122,149,198,.35);box-shadow:inset 0 0 30px rgba(0,0,0,.42),0 0 0 1px rgba(255,255,255,.02)}
+.canvasWrap::before{content:"DESIGN FORGE";position:absolute;top:-9px;left:18px;padding:2px 9px;background:#111722;border:1px solid #394760;border-radius:999px;color:#9eb3d4;font-size:9px;font-weight:1000;letter-spacing:.16em;z-index:2}.canvasWrap canvas{box-shadow:0 0 0 1px rgba(255,255,255,.08),0 8px 26px rgba(0,0,0,.3)}
+.timer{font-variant-numeric:tabular-nums;text-shadow:0 0 18px rgba(255,211,110,.25)}.timer.danger{animation:timerPulse .62s ease-in-out infinite}@keyframes timerPulse{50%{transform:scale(1.09);text-shadow:0 0 26px rgba(255,80,80,.65)}}
+.typeBtn{min-height:52px;text-transform:uppercase;letter-spacing:.055em}.typeBtn.active.monster{box-shadow:0 0 22px rgba(255,197,77,.16),inset 0 0 18px rgba(255,197,77,.06)}.typeBtn.active.support{box-shadow:0 0 22px rgba(231,133,255,.16),inset 0 0 18px rgba(231,133,255,.06)}
+.battleTop{position:relative}.fighter{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(29,38,55,.92),rgba(15,20,30,.98));box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 10px 30px rgba(0,0,0,.22)}.fighter:first-child{border-color:rgba(86,193,255,.3)}.fighter:last-child{border-color:rgba(255,102,129,.3)}.fighter::after{content:"";position:absolute;width:120px;height:120px;border-radius:50%;right:-48px;top:-64px;background:radial-gradient(circle,rgba(255,255,255,.08),transparent 68%)}.name{font-size:17px;letter-spacing:.03em}.hpbar{height:22px;position:relative;background:#0a0f17;border-color:#44536b;box-shadow:inset 0 2px 7px rgba(0,0,0,.7)}.hpbar::after{content:"";position:absolute;inset:2px;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.13),transparent 48%);pointer-events:none}.fill{background:linear-gradient(90deg,#ff324f 0,#ff735b 45%,#ffc34f 100%);box-shadow:0 0 16px rgba(255,81,78,.44)}
+.roundBox{padding:11px 14px;border-radius:16px;background:linear-gradient(90deg,rgba(60,43,15,.38),rgba(28,33,49,.45),rgba(50,29,57,.35));border:1px solid rgba(255,211,110,.18)}.round{font-size:23px;letter-spacing:.08em;text-shadow:0 0 16px rgba(255,211,110,.26)}
+.clash{position:relative;padding:16px;border-radius:22px;background:radial-gradient(circle at 50% 48%,rgba(255,199,82,.09),transparent 26%),linear-gradient(180deg,rgba(10,14,23,.9),rgba(21,15,29,.88));border:1px solid rgba(124,142,178,.22);box-shadow:inset 0 0 50px rgba(0,0,0,.32)}.clash::before{content:"";position:absolute;left:50%;top:8%;bottom:8%;width:1px;background:linear-gradient(transparent,rgba(255,218,125,.4),transparent);transform:translateX(-50%)}.vs{position:relative;z-index:2;font-size:34px;font-style:italic;letter-spacing:-.04em;color:#fff3bc;text-shadow:0 0 12px rgba(255,216,104,.6),0 0 32px rgba(255,138,50,.25);animation:vsPulse 2.5s ease-in-out infinite}@keyframes vsPulse{50%{transform:scale(1.08);filter:brightness(1.18)}}
+.card{transform:translateZ(0);border-radius:20px;border-color:rgba(128,153,196,.42);background:linear-gradient(160deg,#2c3548 0,#171e2b 48%,#0d1119 100%);box-shadow:0 16px 38px rgba(0,0,0,.34),inset 0 0 0 1px rgba(255,255,255,.025);transition:.22s transform,.22s box-shadow}.card:hover{transform:translateY(-4px) scale(1.012);box-shadow:0 22px 48px rgba(0,0,0,.42),0 0 22px rgba(112,161,255,.09)}.card::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 0 35%,rgba(255,255,255,.08) 43%,transparent 51%);transform:translateX(-120%);animation:cardShine 5.5s ease-in-out infinite}.card.supportCard{border-color:rgba(230,142,255,.45);box-shadow:0 16px 38px rgba(0,0,0,.34),0 0 22px rgba(202,117,255,.08),inset 0 0 0 1px rgba(255,255,255,.025)}@keyframes cardShine{0%,72%{transform:translateX(-120%)}88%,100%{transform:translateX(140%)}}.thumb{position:relative}.thumb::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 30px rgba(0,0,0,.13);pointer-events:none}.meta{padding:12px}.title{font-size:18px;letter-spacing:.015em}.badge,.element,.score{backdrop-filter:blur(6px)}.score{border:1px solid rgba(255,255,255,.12)}
+.hiddenCard{position:relative;overflow:hidden;border-radius:20px;background:linear-gradient(145deg,#151d2b,#0d121c);border:1px dashed rgba(114,139,182,.48);font-weight:800;letter-spacing:.035em}.hiddenCard::before{content:"DDD";position:absolute;font-size:70px;font-weight:1000;letter-spacing:-.09em;color:rgba(255,255,255,.025);transform:rotate(-12deg)}
+.eventBox{position:relative;overflow:hidden;border-color:rgba(180,125,255,.35);box-shadow:0 0 26px rgba(165,97,255,.08)}.eventBox::after{content:"✦";position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:28px;color:rgba(215,171,255,.3)}
+.log{background:linear-gradient(180deg,#0a1019,#0b0f16);box-shadow:inset 0 0 30px rgba(0,0,0,.28)}.logline:first-child{color:#fff2bd;font-weight:800}.banner.show{font-size:18px;box-shadow:0 0 30px rgba(197,116,255,.16)}
+.effectLayer{background:radial-gradient(circle,rgba(255,222,139,.12),rgba(15,5,23,.72));backdrop-filter:blur(2px)}.effectText{font-style:italic;letter-spacing:.09em;background:linear-gradient(180deg,rgba(20,19,30,.78),rgba(7,9,14,.83));border-color:rgba(255,229,170,.42);box-shadow:0 0 55px rgba(255,186,66,.16)}
+.fxOverlay{background:radial-gradient(circle,rgba(255,255,255,.09),rgba(0,0,0,.5));backdrop-filter:blur(2px)}.fxText{font-style:italic;letter-spacing:.045em;-webkit-text-stroke:1px rgba(255,255,255,.15);filter:drop-shadow(0 12px 18px rgba(0,0,0,.7))}
+.fxOverlay.godEvent{background:radial-gradient(circle at center,rgba(255,222,115,.18) 0%,rgba(116,63,200,.22) 28%,rgba(3,4,10,.82) 72%);backdrop-filter:blur(5px)}
+.fxOverlay.godEvent:before,.fxOverlay.godEvent:after{content:"";position:absolute;width:min(72vw,720px);aspect-ratio:1;border:2px solid rgba(255,221,122,.34);border-radius:50%;box-shadow:0 0 60px rgba(198,132,255,.2),inset 0 0 60px rgba(255,210,92,.08);animation:godRing 2.2s ease-out both}.fxOverlay.godEvent:after{width:min(50vw,500px);border-style:dashed;animation-direction:reverse}
+.fxText.god{white-space:pre-line;text-align:center;font-family:Georgia,serif;font-style:normal;font-size:clamp(30px,6vw,74px);line-height:1.08;color:#fff1b6;background:linear-gradient(180deg,#fff8d5,#e6b955 48%,#d4a6ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none;filter:drop-shadow(0 0 28px rgba(255,218,97,.35)) drop-shadow(0 12px 25px rgba(0,0,0,.75));animation:godCutin 2.2s cubic-bezier(.18,.8,.2,1) both}
+@keyframes godRing{0%{transform:scale(.35) rotate(-18deg);opacity:0}35%{opacity:1}100%{transform:scale(1.15) rotate(22deg);opacity:0}}
+@keyframes godCutin{0%{transform:scale(.45);opacity:0;letter-spacing:.35em}25%{transform:scale(1.08);opacity:1}72%{transform:scale(1);opacity:1;letter-spacing:.08em}100%{transform:scale(1.04);opacity:0}}
+@media(max-width:980px){.wrap>h1{font-size:34px}.clash{padding:10px}.clash::before{display:none}.card{max-width:460px;margin-inline:auto}.hiddenCard{max-width:460px;margin-inline:auto;width:100%}}
+
+/* ===== DDD premium visual layer ===== */
+:root{--gold:#f6d36f;--gold2:#fff0a8;--violet:#a775ff;--ink:#080912;--glass:rgba(15,18,31,.82)}
+html{background:#070810}
+body{position:relative;overflow-x:hidden;background:
+radial-gradient(circle at 50% -10%,rgba(126,77,255,.24),transparent 34%),
+radial-gradient(circle at 10% 30%,rgba(255,196,73,.08),transparent 27%),
+radial-gradient(circle at 90% 60%,rgba(92,70,255,.09),transparent 30%),
+linear-gradient(180deg,#090a12 0%,#0b0d16 55%,#070810 100%);letter-spacing:.01em}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.32;background-image:
+radial-gradient(circle,#fff 0 1px,transparent 1.3px),radial-gradient(circle,#d8c3ff 0 1px,transparent 1.3px);background-size:88px 88px,137px 137px;background-position:0 0,31px 19px;mask-image:linear-gradient(to bottom,#000,transparent 80%)}
+body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760px;transform:translateX(-50%);border:1px solid rgba(255,220,125,.09);border-radius:50%;box-shadow:0 0 0 90px rgba(132,91,255,.025),0 0 0 180px rgba(255,211,110,.018);pointer-events:none;z-index:-1}
+.wrap{max-width:1380px;padding:24px 20px 52px}
+.gameHero{position:relative;isolation:isolate;min-height:210px;display:grid;grid-template-columns:155px 1fr auto;gap:24px;align-items:center;margin:4px 0 22px;padding:28px 32px;overflow:hidden;border:1px solid rgba(255,221,129,.24);border-radius:28px;background-image:linear-gradient(115deg,rgba(7,8,14,.84),rgba(14,12,22,.72) 34%,rgba(12,11,21,.58) 62%,rgba(20,9,32,.8)),linear-gradient(0deg,rgba(8,10,18,.52),rgba(8,10,18,.52)),url("./竜と魔神_終焉の空中決戦.png");background-size:cover,cover,cover;background-position:center center,center center,center center;box-shadow:0 28px 90px rgba(0,0,0,.38),inset 0 1px rgba(255,255,255,.04)}
+.gameHero>*{position:relative;z-index:1}
+.gameHero:before{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 18%,rgba(255,255,255,.035) 35%,transparent 52%);transform:translateX(-80%);animation:heroSweep 7s ease-in-out infinite}
+.gameHero:after{content:"";position:absolute;right:-120px;top:-180px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(162,104,255,.18),transparent 65%);filter:blur(4px)}
+@keyframes heroSweep{0%,62%{transform:translateX(-85%)}85%,100%{transform:translateX(100%)}}
+.sigil{width:134px;height:134px;border-radius:50%;display:grid;place-items:center;position:relative;border:1px solid rgba(255,220,126,.5);background:radial-gradient(circle,rgba(255,216,112,.14),rgba(74,43,113,.13) 52%,transparent 54%);box-shadow:0 0 38px rgba(153,93,255,.17),inset 0 0 28px rgba(255,218,117,.1)}
+.sigil:before,.sigil:after{content:"";position:absolute;inset:13px;border:1px solid rgba(255,225,145,.25);transform:rotate(45deg)}.sigil:after{inset:27px;transform:rotate(22.5deg);border-color:rgba(166,111,255,.38)}
+.sigil span{font-family:Georgia,serif;font-weight:900;font-size:31px;letter-spacing:.12em;color:var(--gold2);text-shadow:0 0 22px rgba(255,211,110,.32);z-index:1;margin-left:.12em}
+.eyebrow{font-size:11px;letter-spacing:.28em;color:#ac9bcf;font-weight:900;margin-bottom:9px}.gameHero h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(30px,4.1vw,58px);line-height:.96;letter-spacing:-.035em;margin:0;color:#f5f1ff;text-shadow:0 6px 30px rgba(0,0,0,.5)}.gameHero h1 em{font-style:normal;color:transparent;background:linear-gradient(90deg,#ffe69a,#ddb65a 42%,#d7b2ff 82%);-webkit-background-clip:text;background-clip:text}.heroTagline{font-weight:1000;letter-spacing:.22em;color:#e0c675;font-size:12px;margin-top:14px}.gameHero .sub{margin:8px 0 0;max-width:700px}.versionPlate{align-self:start;position:relative;z-index:1;border:1px solid rgba(255,220,120,.28);border-radius:12px;padding:9px 12px;text-align:right;font-size:11px;font-weight:1000;letter-spacing:.12em;color:#f7dc86;background:rgba(8,10,17,.54)}.versionPlate small{font-size:8px;color:#a99cbc}
+.grid{grid-template-columns:minmax(380px,440px) minmax(0,1fr);gap:18px}
+.panel{position:relative;overflow:hidden;border-radius:24px;padding:20px;border:1px solid rgba(130,144,177,.23);background:linear-gradient(180deg,rgba(24,28,43,.91),rgba(13,16,27,.94));box-shadow:0 24px 70px rgba(0,0,0,.3),inset 0 1px rgba(255,255,255,.035)}
+.panel:before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),var(--violet),transparent);opacity:.7}.panel>h2{display:flex;align-items:baseline;gap:9px;margin:0 0 14px;font-size:20px;letter-spacing:.02em}.panel>h2 small{font-size:9px;letter-spacing:.18em;color:#817895;margin-left:auto}.stepNo{font-family:Georgia,serif;color:#e6c66c;font-size:13px;border-right:1px solid rgba(255,218,112,.28);padding-right:9px}.subHeading{font-size:12px!important;letter-spacing:.21em!important;color:#a99bc2!important;border-bottom:1px solid rgba(133,146,179,.15);padding-bottom:9px}
+.forgePanel{background:linear-gradient(180deg,rgba(29,26,43,.95),rgba(13,16,27,.96))}.arenaPanel{background:linear-gradient(180deg,rgba(20,24,38,.96),rgba(12,14,24,.96))}
+.note,.status,.submitState,.previewBox,.eventBox{border-radius:16px;background:rgba(8,11,20,.56);border-color:rgba(119,134,168,.23);box-shadow:inset 0 1px rgba(255,255,255,.025)}
+.eventBox{background:linear-gradient(90deg,rgba(79,43,108,.24),rgba(17,16,32,.7));border-color:rgba(194,139,255,.27);box-shadow:inset 3px 0 #ad76ef}
+.timerBox{padding:13px 15px;border:1px solid rgba(255,218,112,.18);border-radius:18px;background:radial-gradient(circle at 10% 20%,rgba(255,210,84,.09),transparent 35%),rgba(8,11,19,.46)}.timer{font-family:Georgia,serif;font-size:42px;line-height:1;color:#ffe286;text-shadow:0 0 20px rgba(255,209,89,.23)}.timer.danger{animation:timerPulse .62s infinite alternate;color:#ff7c8f;text-shadow:0 0 24px rgba(255,76,95,.4)}@keyframes timerPulse{to{transform:scale(1.07)}}
+.countChip{border-color:rgba(126,140,174,.22);background:rgba(12,16,27,.72);box-shadow:inset 0 1px rgba(255,255,255,.025)}
+.typeBtn{position:relative;overflow:hidden;border-radius:16px;padding:14px 10px;transition:.18s ease;background:linear-gradient(180deg,#252c3d,#161b27)}.typeBtn:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.08)}.typeBtn.active.monster{background:linear-gradient(180deg,#55401d,#2b2112);box-shadow:0 0 22px rgba(255,204,80,.14),inset 0 1px rgba(255,241,187,.12)}.typeBtn.active.support{background:linear-gradient(180deg,#4a2751,#25162b);box-shadow:0 0 22px rgba(224,123,255,.12),inset 0 1px rgba(255,219,255,.1)}
+.tools{padding:10px;border-radius:16px;background:rgba(9,12,21,.45);border:1px solid rgba(119,134,168,.14)}.swatch{box-shadow:0 3px 10px rgba(0,0,0,.22)}
+.canvasWrap{position:relative;padding:12px;border-radius:20px;border-color:rgba(255,218,112,.23);background:linear-gradient(145deg,#0b0e17,#181323);box-shadow:0 18px 45px rgba(0,0,0,.34),inset 0 0 24px rgba(139,85,255,.04)}.canvasWrap:before{content:"DIVINE CANVAS";position:absolute;top:-9px;left:20px;background:#121522;padding:2px 9px;border:1px solid rgba(255,218,112,.2);border-radius:999px;font-size:8px;letter-spacing:.18em;color:#bfae83;z-index:2}.canvasWrap canvas{border-radius:14px;box-shadow:0 0 0 1px rgba(255,255,255,.8),0 0 35px rgba(166,115,255,.08)}
+.input{border-radius:14px;padding:13px 14px;background:rgba(7,10,18,.8);border-color:rgba(129,145,179,.3);outline:none;transition:.18s}.input:focus{border-color:rgba(255,214,101,.58);box-shadow:0 0 0 3px rgba(255,211,110,.07),0 0 22px rgba(153,91,255,.08)}
+.btn{position:relative;overflow:hidden;border-radius:14px;padding:11px 16px;letter-spacing:.02em;transition:transform .15s,filter .15s,box-shadow .15s}.btn:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.08)}.btn.primary{background:linear-gradient(135deg,#ffe58b,#c99c3f);box-shadow:0 9px 22px rgba(200,151,48,.15),inset 0 1px rgba(255,255,255,.45)}.btn.primary:after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 15%,rgba(255,255,255,.38),transparent 42%);transform:translateX(-120%);transition:.45s}.btn.primary:hover:after{transform:translateX(130%)}.btn.secondary{background:linear-gradient(180deg,#293247,#171d2a);border-color:rgba(126,143,178,.34)}
+.lobby{gap:10px}.lobby .status{padding:14px}.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:rgba(255,214,105,.06);border:1px dashed rgba(255,214,105,.25);border-radius:10px;padding:7px 8px;margin-top:4px}
+.battleTop{gap:14px}.fighter{position:relative;overflow:hidden;border-radius:19px;padding:16px;background:linear-gradient(135deg,rgba(29,35,54,.96),rgba(13,16,27,.97));border-color:rgba(131,148,184,.26)}.fighter:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(#ffe27a,#9a69ff)}.fighter:nth-child(2):before{left:auto;right:0;background:linear-gradient(#ff8b8b,#975fff)}.name{font-size:15px;letter-spacing:.04em}.hpbar{height:22px;border-radius:6px;background:#090c14;border-color:rgba(130,146,180,.27);box-shadow:inset 0 2px 8px rgba(0,0,0,.55)}.fill{position:relative;background:linear-gradient(90deg,#d8324e,#ff625d 48%,#ffc262);box-shadow:0 0 14px rgba(255,83,79,.24)}.fill:after{content:"";position:absolute;inset:1px 0 auto;height:35%;background:linear-gradient(90deg,rgba(255,255,255,.3),rgba(255,255,255,.05));border-radius:4px}
+.roundBox{padding:11px 14px;border:1px solid rgba(255,216,105,.18);border-radius:16px;background:rgba(10,13,22,.62)}.round{font-family:Georgia,serif;font-size:24px;letter-spacing:.08em}.phase{padding:4px 9px;border-radius:999px;background:rgba(154,105,255,.11);border:1px solid rgba(174,128,255,.2);color:#dac6ff}
+.clash{grid-template-columns:minmax(0,1fr) 90px minmax(0,1fr);align-items:center}.vs{padding:0;font-family:Georgia,serif;font-size:38px;font-style:italic;color:transparent;background:linear-gradient(180deg,#fff4bb,#d9a94a);-webkit-background-clip:text;background-clip:text;text-shadow:none;filter:drop-shadow(0 5px 13px rgba(255,205,83,.18))}
+.card{border-radius:20px;border-color:rgba(225,196,111,.29);background:linear-gradient(160deg,#24293a,#10131e 68%);box-shadow:0 18px 45px rgba(0,0,0,.34),inset 0 0 0 1px rgba(255,255,255,.025);transition:.24s transform,.24s box-shadow}.card:hover{transform:translateY(-4px) rotateX(1deg);box-shadow:0 22px 55px rgba(0,0,0,.42),0 0 22px rgba(166,106,255,.08)}.card:before{content:"";position:absolute;inset:6px;border:1px solid rgba(255,223,139,.12);border-radius:15px;pointer-events:none;z-index:2}.card.supportCard{border-color:rgba(232,151,255,.33);background:linear-gradient(160deg,#32233b,#11131f 68%)}.thumb{margin:7px 7px 0;border-radius:13px;border:1px solid rgba(255,255,255,.16);aspect-ratio:1.03/1}.meta{padding:12px 14px 15px}.title{font-family:Georgia,serif;font-size:18px;color:#fff4d4}.score{top:13px;right:13px;border:1px solid rgba(255,229,157,.25);backdrop-filter:blur(7px)}.badge{letter-spacing:.06em}.hiddenCard{position:relative;overflow:hidden;min-height:300px;border-radius:20px;border:1px solid rgba(139,116,194,.3);background:radial-gradient(circle at 50% 35%,rgba(128,75,213,.16),transparent 34%),linear-gradient(145deg,#151426,#0d1019);box-shadow:inset 0 0 45px rgba(136,78,221,.04)}.hiddenCard:before{content:"DDD";position:absolute;font-family:Georgia,serif;font-weight:900;font-size:52px;letter-spacing:.08em;color:rgba(255,223,143,.055);transform:rotate(-18deg)}
+.log{border-radius:18px;background:rgba(6,9,16,.7);border-color:rgba(115,132,166,.2);padding:6px 14px}.logline{padding:9px 2px;border-bottom-color:rgba(103,120,153,.13)}.battleEffects{display:grid;gap:8px;margin-top:12px}.effectRow{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid rgba(255,221,129,.2);border-radius:14px;background:linear-gradient(90deg,rgba(60,43,94,.28),rgba(10,13,22,.75));font-weight:850;animation:effectSlide .45s ease both}.effectRow .fxIcon{font-size:20px;min-width:28px;text-align:center}.effectRow.good{border-color:rgba(124,231,170,.3)}.effectRow.bad{border-color:rgba(255,125,125,.3)}.effectRow.attr{border-color:rgba(130,180,255,.3)}.powerDuel{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-top:12px;padding:14px;border:1px solid rgba(255,218,112,.22);border-radius:18px;background:radial-gradient(circle at 50% 50%,rgba(255,211,110,.08),transparent 55%),rgba(7,10,18,.7)}.powerSide{text-align:center}.powerNum{font-family:Georgia,serif;font-size:34px;font-weight:1000;color:#ffe491;text-shadow:0 0 18px rgba(255,212,96,.25)}.powerLabel{font-size:10px;letter-spacing:.16em;color:#9389a9;font-weight:900}.powerVs{font-family:Georgia,serif;color:#d6b86b;font-weight:1000}@keyframes effectSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.audioDock{top:18px;right:18px;border-radius:14px;border-color:rgba(255,220,126,.26);background:rgba(9,11,19,.82);box-shadow:0 12px 36px rgba(0,0,0,.34);z-index:100}
+.effectLayer{backdrop-filter:blur(3px)}.effectText{font-family:Georgia,serif;letter-spacing:.1em;border-color:rgba(255,226,148,.3);background:linear-gradient(145deg,rgba(17,14,29,.86),rgba(7,9,16,.86))}
+@media(max-width:980px){.gameHero{grid-template-columns:100px 1fr;padding:20px}.sigil{width:90px;height:90px}.sigil span{font-size:22px}.versionPlate{display:none}.grid{grid-template-columns:1fr}.gameHero h1{font-size:clamp(28px,7vw,44px)}}
+@media(max-width:620px){.wrap{padding:12px 10px 38px}.gameHero{grid-template-columns:1fr;text-align:center;min-height:0;padding:22px 14px;border-radius:21px}.sigil{margin:auto}.eyebrow{font-size:9px}.heroTagline{font-size:9px}.panel{padding:15px;border-radius:20px}.panel>h2 small{display:none}.clash{grid-template-columns:1fr}.vs{font-size:28px;margin:3px 0}.audioDock{position:relative;top:auto;right:auto;margin:0 0 10px auto}.card,.hiddenCard{min-height:240px}}
+
+/* ===== TITLE MENU ===== */
+.titleMenu{position:fixed;inset:0;z-index:5000;display:grid;place-items:center;overflow:auto;padding:24px;background:linear-gradient(90deg,rgba(5,6,11,.72),rgba(8,7,14,.35) 48%,rgba(13,4,20,.68)),linear-gradient(0deg,rgba(5,6,11,.42),rgba(5,6,11,.28)),url("./竜と魔神_終焉の空中決戦.png") center/cover no-repeat}.titleMenu.hidden{display:none}.menuShell{width:min(920px,100%);display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:34px;align-items:center;padding:34px;border:1px solid rgba(255,222,132,.28);border-radius:30px;background:linear-gradient(120deg,rgba(10,10,18,.72),rgba(18,10,29,.6));backdrop-filter:blur(9px);box-shadow:0 30px 100px rgba(0,0,0,.55),inset 0 1px rgba(255,255,255,.05)}.menuBrand .kicker{font-size:11px;letter-spacing:.33em;color:#c9a9ff;font-weight:1000}.menuBrand h1{font-family:Georgia,serif;font-size:clamp(42px,6vw,78px);line-height:.88;margin:10px 0 14px;color:#fff6d6;text-shadow:0 8px 30px rgba(0,0,0,.65)}.menuBrand h1 span{display:block;color:transparent;background:linear-gradient(90deg,#ffe89d,#dcae4c 45%,#d7b2ff);-webkit-background-clip:text;background-clip:text}.menuBrand p{max-width:560px;color:#d8d3e4;line-height:1.7}.menuLogo{font-family:Georgia,serif;font-size:18px;letter-spacing:.35em;color:#f0cf74;font-weight:900}.menuButtons{display:grid;gap:11px}.menuBtn{position:relative;overflow:hidden;text-align:left;border:1px solid rgba(255,225,146,.24);border-radius:16px;padding:16px 18px;background:linear-gradient(180deg,rgba(38,31,54,.9),rgba(14,16,26,.92));color:#f4effc;font-weight:1000;letter-spacing:.04em;cursor:pointer;transition:.18s transform,.18s filter,.18s border-color}.menuBtn:hover{transform:translateX(4px);filter:brightness(1.12);border-color:rgba(255,222,132,.48)}.menuBtn small{display:block;margin-top:3px;color:#9f96b0;font-size:9px;letter-spacing:.14em}.menuBtn.primaryMenu{background:linear-gradient(180deg,#5b421c,#271d10);color:#fff0b5}.menuBtn.onlineMenu{background:linear-gradient(180deg,#36254e,#181523)}.menuFooter{margin-top:14px;color:#9c94aa;font-size:10px;letter-spacing:.11em}.rulesModal{position:fixed;inset:0;z-index:5100;display:none;place-items:center;padding:20px;background:rgba(5,6,11,.78);backdrop-filter:blur(8px)}.rulesModal.show{display:grid}.rulesCard{width:min(760px,100%);max-height:82vh;overflow:auto;border:1px solid rgba(255,220,126,.28);border-radius:24px;padding:24px;background:linear-gradient(180deg,#171525,#0c0f18);box-shadow:0 30px 90px rgba(0,0,0,.6)}.rulesCard h2{font-family:Georgia,serif;color:#ffe69a}.rulesGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ruleItem{padding:12px;border:1px solid rgba(129,143,175,.18);border-radius:14px;background:rgba(255,255,255,.025);line-height:1.55;font-size:13px;color:#d8ddeb}.backTitle{position:fixed;left:16px;bottom:16px;z-index:1200;display:none}.backTitle.show{display:block}@media(max-width:760px){.menuShell{grid-template-columns:1fr;padding:24px}.menuBrand{text-align:center}.menuButtons{max-width:460px;width:100%;margin:auto}.rulesGrid{grid-template-columns:1fr}.titleMenu{padding:12px}.menuBrand h1{font-size:48px}}
+</style>
+
+</head>
+<body>
+
+<div id="titleMenu" class="titleMenu"><div class="menuShell"><div class="menuBrand"><div class="menuLogo">DDD</div><div class="kicker">DIVINE CARD BATTLE SYSTEM</div><h1>ディバイン・デザイン・<span>デストラクション</span></h1><p>60秒で描いた一枚を神話へ。名付け、召喚し、相手を破壊せよ。</p><div class="menuFooter">VER. 1.0 · AI HYBRID JUDGEMENT · CPU / ONLINE</div></div><div class="menuButtons"><button id="menuCpuBtn" class="menuBtn primaryMenu">CPU BATTLE<small>1人でテストプレイ</small></button><button id="menuOnlineBtn" class="menuBtn onlineMenu">ONLINE BATTLE<small>ルームコードで友達と対戦</small></button><button id="menuRulesBtn" class="menuBtn">RULES<small>ゲームルールを確認</small></button><button id="menuGalleryBtn" class="menuBtn galleryMenu">CARD GALLERY<small>これまで作ったカードを鑑賞</small></button><button id="menuBgmBtn" class="menuBtn">BGM / SOUND<small>クリックでBGMをON/OFF</small></button></div></div></div><div id="rulesModal" class="rulesModal"><div class="rulesCard"><div class="row" style="justify-content:space-between"><h2>DDD RULES</h2><button id="rulesCloseBtn" class="btn secondary">閉じる</button></div><div class="rulesGrid"><div class="ruleItem"><b>勝利条件</b><br>先に5勝したプレイヤーが勝利。</div><div class="ruleItem"><b>1ラウンド</b><br>60秒で絵を1枚描く → 名付け → 提出 → カード公開後、両者READYでバトル開始。</div><div class="ruleItem"><b>モンスター</b><br>モンスター同士なら属性相性込みでバトル。</div><div class="ruleItem"><b>サポート</b><br>1試合1枚のみ。その代わり非常に強力な逆転用の切り札。劣勢時は逆転補正も入る。</div><div class="ruleItem"><b>組み合わせ</b><br>サポート使用時は効果を次のモンスター戦へ保存。DRAW扱いで両カード消滅・勝利数加算なし。</div><div class="ruleItem"><b>自動判定</b><br>絵柄＋カード名＋ブラウザ内AIで能力・属性・効果を決定。</div></div></div></div><div id="galleryModal" class="galleryModal"><div class="galleryCard"><div class="galleryHead"><div><h2>CARD GALLERY</h2><div class="small">このブラウザに保存。通常カードは最新30枚、★お気に入りは別枠で保護。星を押すと登録・解除できます。</div></div><div class="row"><button id="galleryClearBtn" class="btn danger">お気に入り以外を削除</button><button id="galleryCloseBtn" class="btn secondary">閉じる</button></div></div><div id="galleryGrid" class="galleryGrid"></div></div></div><div id="galleryDetail" class="galleryDetail"><div class="galleryDetailInner"><div id="galleryDetailCard"></div><div id="galleryDetailMeta" class="galleryMeta" style="text-align:center"></div><div class="galleryDetailActions"><button id="galleryFavoriteBtn" class="btn secondary" aria-pressed="false">☆ お気に入り</button><button id="galleryDetailCloseBtn" class="btn secondary">一覧へ戻る</button></div></div></div><button id="backTitleBtn" class="btn secondary backTitle">← TITLE</button>
+
+<div class="effectLayer" id="effectLayer"><div class="effectText" id="effectText">READY</div></div>
+<div class="audioDock" aria-label="BGM controls"><button id="bgmBtn" class="audioBtn">♪ BGM OFF</button><span class="vol">VOL</span><input id="bgmVolume" type="range" min="0" max="100" value="35" aria-label="BGM volume"></div>
+<div class="wrap">
+<div class="gameHero">
+    <div class="sigil" aria-hidden="true"><span>DDD</span></div>
+    <div class="heroCopy">
+      <div class="eyebrow">DIVINE CARD BATTLE SYSTEM</div>
+      <h1>ディバイン・デザイン・<br><em>デストラクション</em></h1>
+      <div class="heroTagline">DRAW. NAME. SUMMON. DESTROY.</div>
+      <div class="sub"><b>Divine Design Destruction（DDD）</b> — 描いた一枚が、そのまま神話になる。</div>
+    </div>
+    <div class="versionPlate">VER. 1.0<br><small>AI JUDGEMENT</small></div>
+  </div>
+  <div class="grid">
+    <section class="panel forgePanel">
+      <h2><span class="stepNo">01</span> 神造工房 <small>CREATE YOUR CARD</small></h2>
+      <div class="note">流れ：<b>60秒お絵描き → 描画ロック → 名付け → 提出</b>。カード種別はモンスター / サポートから選択。サポートは各プレイヤー1試合1回のみ。劣勢をひっくり返す最後の切り札。</div>
+      <div class="section timerBox">
+        <div><b>残り時間</b><div id="timer" class="timer">--</div></div>
+        <div><b>作成状況</b><div id="creationState" class="small">接続待ち</div></div>
+      </div>
+      <div class="section countBox">
+        <div class="countChip">あなたのサポート残り: <span id="mySupportLeft">1</span></div>
+        <div class="countChip">相手のサポート残り: <span id="oppSupportLeft">1</span></div>
+      </div>
+      <div class="section typeTabs">
+        <button id="monsterTypeBtn" class="typeBtn active monster">モンスターカード</button>
+        <button id="supportTypeBtn" class="typeBtn support">サポートカード</button>
+      </div>
+      <div class="section"><span id="selectedTypePill" class="pill monster">現在: モンスター</span></div>
+      <div class="tools">
+        <button class="swatch active" data-color="#111111" style="background:#111111" title="黒" aria-label="黒"></button>
+        <button class="swatch" data-color="#ffffff" style="background:#ffffff" title="白" aria-label="白"></button>
+        <button class="swatch" data-color="#808080" style="background:#808080" title="灰色" aria-label="灰色"></button>
+        <button class="swatch" data-color="#d64045" style="background:#d64045" title="赤" aria-label="赤"></button>
+        <button class="swatch" data-color="#f48fb1" style="background:#f48fb1" title="ピンク" aria-label="ピンク"></button>
+        <button class="swatch" data-color="#f49c2f" style="background:#f49c2f" title="オレンジ" aria-label="オレンジ"></button>
+        <button class="swatch" data-color="#f5d547" style="background:#f5d547" title="黄色" aria-label="黄色"></button>
+        <button class="swatch" data-color="#23b26d" style="background:#23b26d" title="緑" aria-label="緑"></button>
+        <button class="swatch" data-color="#8bd450" style="background:#8bd450" title="黄緑" aria-label="黄緑"></button>
+        <button class="swatch" data-color="#2d7ff9" style="background:#2d7ff9" title="青" aria-label="青"></button>
+        <button class="swatch" data-color="#49cddd" style="background:#49cddd" title="水色" aria-label="水色"></button>
+        <button class="swatch" data-color="#8d4bff" style="background:#8d4bff" title="紫" aria-label="紫"></button>
+        <span class="small">太さ</span>
+        <input id="brushSize" type="range" min="6" max="72" value="18">
+        <span id="brushLabel" class="small">18px</span>
+      </div>
+      <div class="row" style="margin-bottom:10px"><button id="penBtn" class="btn secondary">✎ ペン</button><button id="eraserBtn" class="btn secondary">消しゴム</button><button id="bucketBtn" class="btn secondary">▣ バケツ</button><button id="undoBtn" class="btn secondary" disabled>↶ 一筆戻す</button><button id="clearBtn" class="btn danger">全消し</button><button id="canvasZoomBtn" class="btn secondary">⛶ キャンバス拡大</button></div>
+      <div id="drawCountdown" class="drawCountdown" hidden><span id="drawCountdownLabel">残り時間</span><strong id="drawSeconds">60秒</strong></div>
+      <div id="canvasWrap" class="canvasWrap"><button id="canvasZoomCloseBtn" class="canvasZoomClose" type="button">縮小して戻る ✕</button><canvas id="drawCanvas" width="640" height="640"></canvas><div class="canvasZoomHint">ESCでも閉じられます</div></div>
+      <div class="section"><input id="cardName" class="input" maxlength="22" placeholder="時間切れ後にカード名を入力" disabled></div>
+      <div class="section row"><button id="previewBtn" class="btn secondary">プレビュー更新</button><button id="finishDrawingBtn" class="btn secondary" disabled>描き終わり → 名付けへ</button><button id="submitBtn" class="btn primary" disabled>この1枚で提出する</button></div>
+      <div id="submitState" class="submitState small">まずオンライン接続してください。</div>
+      <div class="section note"><div class="row" style="justify-content:space-between;align-items:center"><div><b>AI判定：</b><span id="aiStatus">未起動</span></div><button id="aiRetryBtn" class="btn secondary" type="button">AIを起動 / 再試行</button></div><div id="aiProgress" class="small" style="margin-top:6px">ゲーム開始時にAIを先読みします。</div><span id="aiSummary" class="small">AI対応時は絵の意味・強そうさ・属性・役割を画像AIでも解析し、名前＋描画特徴と合成します。失敗時は従来判定へ自動切替。</span></div>
+      <div class="section previewBox"><h3 style="margin-top:0">カードのプレビュー</h3><div id="previewArea" class="small">まだ作成されていません。</div></div>
+      <div class="small section">追加仕様：<br>・モンスターには火/水/地/風/光/闇の属性が付き、相性で戦闘力補正<br>・サポートは次のモンスター戦へ<b>強化 / 防御加算 / 弱体化</b>を付与<br>・神イベントはたまにだけ発生。逆転の天秤など、試合をひっくり返すレアイベントもあり</div>
+    </section>
+
+    <section class="panel arenaPanel">
+      <h2><span class="stepNo">02</span> 対戦ゲート <small>CHOOSE YOUR BATTLE</small></h2><div class="section note"><b>CPU対戦（テストプレイ）</b>なら1人ですぐ開始できます。オンラインは従来どおりルームコード方式です。</div><div class="section row"><button id="cpuStartBtn" class="btn primary">CPU対戦を開始</button><button id="cpuStopBtn" class="btn secondary" disabled>CPU対戦を終了</button></div><h2 class="section subHeading">ONLINE ROOM</h2>
+      <div class="lobby">
+        <div class="status"><b>部屋を作る</b><div class="small" style="margin:6px 0 10px">ホスト側。コードをDiscordで友達へ。</div><button id="hostBtn" class="btn primary">部屋を作る</button><div id="hostCodeWrap" style="display:none;margin-top:10px"><div class="small">ルームコード</div><div id="hostCode" class="code"></div><button id="copyBtn" class="btn secondary" style="margin-top:8px">コードをコピー</button></div></div>
+        <div class="status"><b>部屋に入る</b><div class="small" style="margin:6px 0 10px">ゲスト側。届いたコードを入力。</div><input id="joinCode" class="input" placeholder="例：drawfield-ABC123"><button id="joinBtn" class="btn primary" style="margin-top:8px">参加する</button></div>
+      </div>
+      <div class="section status"><b>接続状態：</b><span id="connStatus" class="wait">未接続</span></div>
+      <div class="section eventBox">現在の神イベント: <span id="fieldEventLabel">接続待ち</span></div>
+      <div class="section note">描画時間中はタイマーが表示され、60秒で描画が止まる。描き終わったら60秒を待たず名付けへ進める。その後はゆっくり名付けして提出。提出までは相手に見えず、両者提出または両者待機後にホストが判定する。</div>
+
+      <div class="section battleZone" id="battleZone">
+        <h2><span class="stepNo">03</span> 神域決戦 <small>DIVINE CLASH</small></h2>
+        <div class="battleTop">
+          <div class="fighter"><div class="name"><span>あなた</span><span id="pState"></span></div><div class="stats"><span>防御 <b id="pShield">0</b></span><span>勝利 <b id="pWins">0</b>/5</span></div></div>
+          <div class="fighter"><div class="name"><span>相手</span><span id="eState"></span></div><div class="stats"><span>防御 <b id="eShield">0</b></span><span>勝利 <b id="eWins">0</b>/5</span></div></div>
+        </div>
+        <div class="roundBox"><div class="round">ROUND <span id="roundNo">1</span></div><div>状態：<span id="phaseLabel" class="phase">接続待ち</span></div></div>
+        <div id="gameStartPanel" style="text-align:center;padding:18px;border:1px solid #967342;background:linear-gradient(135deg,#17101f,#100d13);border-radius:12px;margin-bottom:14px"><button id="gameStartBtn" class="battleReadyBtn">GAME START</button><div id="gameStartStatus" class="small" style="margin-top:10px;color:#d8c49d" role="status"></div></div><div id="battleBanner" class="banner"></div><div id="battleReadyRow" class="battleReadyRow"><button id="battleReadyBtn" class="battleReadyBtn">BATTLE READY</button></div><div id="battleReadyStatus" class="battleReadyStatus"></div><div id="battleEffects" class="battleEffects"></div>
+        <div class="clash section">
+          <div id="myCardSlot" class="hiddenCard">あなたのカード<br>まだ未提出</div>
+          <div class="vs">VS</div>
+          <div id="oppCardSlot" class="hiddenCard">相手のカード<br>まだ未提出</div>
+        </div>
+        <div class="section"><h3>バトルログ</h3><div id="log" class="log"><div class="logline">接続後、ホストのGAME STARTで開始。</div></div></div>
+        <div class="section row"><button id="rematchBtn" class="btn secondary" disabled>最初から再戦</button></div>
+      </div>
+    </section>
+  </div>
+</div>
+<div id="attributeAttackFx" class="attributeAttackFx" aria-hidden="true"><div class="attackLabel" id="attributeAttackLabel"></div><div class="trail"></div><div class="attackCore"></div><div class="impact"></div></div>
+<div id="fxOverlay" class="fxOverlay"><div id="fxText" class="fxText"></div></div>
+<script>
+(() => {
+  // Victory is determined solely by WIN_TARGET.
+  const DRAW_MS = 60000;
+  const SUPPORT_LIMIT = 1;
+  const WIN_TARGET = 5;
+  const $ = id => document.getElementById(id);
+  const canvas = $('drawCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+  let peer = null, conn = null, role = null;
+  let gameMode = 'none'; // none | online | cpu
+  let authGame = null, viewGame = null;
+  let drawing = false, last = null;
+  let erasing = false, bucketMode = false, brushColor = '#111111', brushSize = 18;
+  const DRAW_HISTORY_LIMIT = 20;
+  let drawHistory = [];
+  let mySubmitted = false;
+  let earlyFinished = false;
+  let selectedType = 'monster';
+  let timerInterval = null;
+  const GALLERY_KEY = 'ddd_card_gallery_v1';
+  const GALLERY_LIMIT = 30;
+  let localRoundSeen = null;
+  let lastFxKey = '';
+  let lastAnnounceToken = '';
+  let lastAttributeAttackKey = '';
+  let lastGodEventKey = '';
+  let aiClassifier = null;
+  let aiLoadPromise = null;
+  let aiVisual = null;
+  let aiAnalyzing = false;
+  let aiGeneration=0;
+  let aiRoundToken = '';
+  const AI_MODEL = 'Xenova/mobileclip_s0';
+  // Procedural BGM: fully generated with Web Audio, no external music file.
+  let audioCtx=null, masterGain=null, musicGain=null, bgmEnabled=false, bgmMood='idle';
+  let bgmTimer=null, bgmStep=0, nextNoteTime=0;
+  const BGM_SETS={
+    idle:{tempo:84, bass:[45,45,48,43,45,50,48,43], lead:[69,null,72,null,67,null,65,null]},
+    draw:{tempo:96, bass:[45,45,43,48,45,50,48,43], lead:[69,72,null,74,67,69,null,65]},
+    battle:{tempo:132,bass:[45,45,48,50,43,43,50,48],lead:[69,72,74,76,67,69,72,74]},
+    over:{tempo:72, bass:[45,48,52,57,52,48,45,45], lead:[69,72,76,81,76,72,69,null]}
+  };
+  function midiHz(n){return 440*Math.pow(2,(n-69)/12);}
+  function ensureAudio(){
+    if(audioCtx) return audioCtx;
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC) return null;
+    audioCtx=new AC(); masterGain=audioCtx.createGain(); musicGain=audioCtx.createGain();
+    musicGain.connect(masterGain); masterGain.connect(audioCtx.destination);
+    masterGain.gain.value=Number($('bgmVolume')?.value||35)/100*.78; musicGain.gain.value=1.0;
+    return audioCtx;
+  }
+  function synthNote(freq,time,dur,kind='lead',gain=.08){
+    if(!audioCtx||!bgmEnabled) return;
+    const osc=audioCtx.createOscillator(), g=audioCtx.createGain(), filter=audioCtx.createBiquadFilter();
+    osc.type=kind==='bass'?'triangle':kind==='bell'?'sine':'sawtooth'; osc.frequency.setValueAtTime(freq,time);
+    if(kind==='lead') osc.detune.setValueAtTime(-5,time);
+    filter.type='lowpass'; filter.frequency.setValueAtTime(kind==='bass'?520:1350,time); filter.Q.value=.7;
+    g.gain.setValueAtTime(.0001,time); g.gain.exponentialRampToValueAtTime(gain,time+.02); g.gain.exponentialRampToValueAtTime(.0001,time+dur);
+    osc.connect(filter); filter.connect(g); g.connect(musicGain); osc.start(time); osc.stop(time+dur+.05);
+  }
+  function noiseHit(time,gain=.028){
+    if(!audioCtx||!bgmEnabled) return;
+    const len=Math.max(1,Math.floor(audioCtx.sampleRate*.07)),buf=audioCtx.createBuffer(1,len,audioCtx.sampleRate),d=buf.getChannelData(0);
+    for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*(1-i/len);
+    const src=audioCtx.createBufferSource(),g=audioCtx.createGain(),f=audioCtx.createBiquadFilter(); src.buffer=buf; f.type='highpass'; f.frequency.value=2600; g.gain.value=gain; src.connect(f); f.connect(g); g.connect(musicGain); src.start(time);
+  }
+  function scheduleBgm(){
+    if(!bgmEnabled||!audioCtx) return;
+    const set=BGM_SETS[bgmMood]||BGM_SETS.idle, beat=60/set.tempo;
+    while(nextNoteTime<audioCtx.currentTime+.3){
+      const i=bgmStep%set.bass.length, bass=set.bass[i], lead=set.lead[i];
+      synthNote(midiHz(bass),nextNoteTime,beat*.82,'bass',bgmMood==='battle'?.12:.085);
+      if(lead!=null) synthNote(midiHz(lead),nextNoteTime,beat*.55,bgmMood==='battle'?'lead':'bell',bgmMood==='battle'?.075:.052);
+      if(bgmMood==='battle' || i%2===0) noiseHit(nextNoteTime,bgmMood==='battle'?.038:.022);
+      if(i===0 && bgmMood!=='battle') synthNote(midiHz(bass+12),nextNoteTime,beat*2.6,'bell',.032);
+      nextNoteTime+=beat/2; bgmStep++;
+    }
+  }
+  async function setBgmEnabled(on){
+    const btn=$('bgmBtn'), menuBtn=$('menuBgmBtn');
+    if(!on){
+      bgmEnabled=false;
+      if(btn){btn.textContent='♪ BGM OFF';btn.classList.remove('on');}
+      if(menuBtn){const sm=menuBtn.querySelector('small'); if(sm) sm.textContent='クリックでBGMをON';}
+      if(bgmTimer){clearInterval(bgmTimer);bgmTimer=null;}
+      if(masterGain&&audioCtx) masterGain.gain.setTargetAtTime(0,audioCtx.currentTime,.04);
+      return;
+    }
+    const ac=ensureAudio();
+    if(!ac){alert('このブラウザではBGMを再生できません。');bgmEnabled=false;return;}
+    try{ if(ac.state!=='running') await ac.resume(); }catch(e){console.warn('AudioContext resume failed',e);}
+    if(ac.state!=='running'){
+      bgmEnabled=false;
+      if(btn) btn.textContent='♪ BGM BLOCKED';
+      alert('ブラウザに音声再生を止められています。画面を一度クリックしてからBGMをONにしてください。');
+      return;
+    }
+    bgmEnabled=true;
+    const volume=Number($('bgmVolume')?.value||35)/100*.78;
+    masterGain.gain.cancelScheduledValues(ac.currentTime);
+    masterGain.gain.setValueAtTime(Math.max(.001,volume),ac.currentTime);
+    musicGain.gain.setValueAtTime(1.0,ac.currentTime);
+    if(btn){btn.textContent='♫ BGM ON';btn.classList.add('on');}
+    if(menuBtn){const sm=menuBtn.querySelector('small'); if(sm) sm.textContent='BGM再生中・クリックでOFF';}
+    bgmStep=0; nextNoteTime=ac.currentTime+.03;
+    scheduleBgm();
+    if(bgmTimer) clearInterval(bgmTimer);
+    bgmTimer=setInterval(()=>{
+      if(audioCtx?.state==='suspended') audioCtx.resume().catch(()=>{});
+      scheduleBgm();
+    },80);
+  }
+  function setBgmMood(mood){if(bgmMood===mood)return;bgmMood=mood;bgmStep=0;if(audioCtx)nextNoteTime=Math.max(audioCtx.currentTime+.04,nextNoteTime);}
+  function sfx(type){
+    if(!bgmEnabled||!ensureAudio())return; const t=audioCtx.currentTime+.01;
+    if(type==='clash'){synthNote(110,t,.14,'bass',.14);synthNote(220,t+.03,.18,'lead',.08);noiseHit(t,.07);}
+    else if(type==='support'){synthNote(523.25,t,.22,'bell',.07);synthNote(659.25,t+.08,.28,'bell',.055);}
+    else if(type==='win'){[523.25,659.25,783.99,1046.5].forEach((f,i)=>synthNote(f,t+i*.11,.4,'bell',.07));}
+    else if(type==='lose'){[392,349.23,293.66,220].forEach((f,i)=>synthNote(f,t+i*.13,.38,'bass',.065));}
+    else if(type==='round'){synthNote(440,t,.16,'bell',.045);synthNote(659.25,t+.08,.22,'bell',.04);}
+  }
+  $('bgmBtn').onclick=()=>setBgmEnabled(!bgmEnabled);
+  $('bgmVolume').oninput=e=>{if(masterGain&&audioCtx)masterGain.gain.setTargetAtTime(Number(e.target.value)/100*.78,audioCtx.currentTime,.04);};
+  const AI_LABELS = [
+    'a powerful dangerous fantasy monster','a weak harmless cute creature',
+    'an aggressive attacking warrior or weapon','an armored defensive guardian or shield','a healing magical creature or angel','a cursed chaotic dark creature',
+    'a fire elemental creature','a water or ice elemental creature','a lightning electric creature','a wind or storm creature','an earth rock nature creature','a holy light creature','a dark shadow demon creature',
+    'an offensive power support item','a protective shield support item','a healing potion support item','a curse poison debuff support item','a focus accuracy support item','a chaotic random magical support item',
+    'a dragon','a sword or blade','a shield or armor','a potion or medicine','an angel','a demon or ghost','an explosion or missile'
+  ];
+
+  const EVENTS = [
+    { id:'calm', name:'静穏', desc:'このラウンドは神イベントなし。', weight:0 },
+    { id:'meteor', name:'流星雨', desc:'双方の次のモンスター戦の戦闘力 -2。', weight:10 },
+    { id:'blessing', name:'祝福の雨', desc:'双方の次のモンスター戦の戦闘力 +3。', weight:9 },
+    { id:'armorbreak', name:'審判の風', desc:'双方の蓄積防御が半分になる。', weight:8 },
+    { id:'chaos', name:'混沌神の気まぐれ', desc:'双方の次戦強化に0〜4をランダム加算。', weight:8 },
+    { id:'double', name:'双撃の祭壇', desc:'モンスター戦の最終戦闘力を双方2倍。', weight:7 },
+    { id:'holy', name:'聖域', desc:'光属性が強化され、闇属性がやや弱体化。', weight:7 },
+    { id:'abyss', name:'奈落', desc:'闇属性が強化され、光属性がやや弱体化。', weight:7 },
+    { id:'mirror', name:'反響の間', desc:'サポートの次戦強化・防御加算が1.5倍。', weight:7 },
+    { id:'reversal', name:'逆転の天秤', desc:'勝利数が少ない側の次戦を強化。勝利数差が大きいほど効果増加。', weight:5 }
+  ];
+
+  const typeToSupportFallback = { attack:'boost', defend:'barrier', heal:'heal', chaos:'chaos' };
+  const elementBeats = { fire:'wind', wind:'earth', earth:'water', water:'fire', light:'shadow', shadow:'light' };
+
+  function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function normalizeName(name){return (name || '').toLowerCase().replace(/\s+/g,'');}
+  function hasAny(name, words){return words.some(w => name.includes(w));}
+  function countHits(name, words){return words.reduce((acc,w)=>acc + (name.includes(w)?1:0),0);}
+  function randPick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+  function clamp(n,min,max){return Math.max(min,Math.min(max,n));}
+
+  function announce(text, cls='event'){
+    const layer = $('effectLayer'), box = $('effectText');
+    box.textContent = text;
+    box.className = 'effectText ' + cls;
+    layer.classList.remove('show');
+    void layer.offsetWidth;
+    layer.classList.add('show');
+    setTimeout(() => layer.classList.remove('show'), 850);
+  }
+
+  function setBrushUI(){
+    $('brushLabel').textContent = brushSize + 'px';
+    $('penBtn').classList.toggle('primary', !erasing && !bucketMode);
+    $('eraserBtn').classList.toggle('primary', erasing && !bucketMode);
+    $('bucketBtn')?.classList.toggle('primary', bucketMode);
+    document.querySelectorAll('.swatch').forEach(el => el.classList.toggle('active', !erasing && el.dataset.color === brushColor));
+  }
+  $('brushSize').addEventListener('input', e => { brushSize = +e.target.value; setBrushUI(); });
+  $('eraserBtn').onclick = () => { erasing = true; bucketMode = false; setBrushUI(); };
+  $('penBtn').onclick = () => { erasing = false; bucketMode = false; setBrushUI(); };
+  $('bucketBtn').onclick = () => { erasing = false; bucketMode = true; setBrushUI(); };
+  document.querySelectorAll('.swatch').forEach(btn => btn.onclick = () => { brushColor = btn.dataset.color; erasing = false; setBrushUI(); });
+  setBrushUI();
+
+  function setCanvasZoom(on){
+    const wrap=$('canvasWrap');
+    if(!wrap) return;
+    wrap.classList.toggle('zoomed', !!on);
+    document.body.classList.toggle('canvasZoomMode', !!on);
+    const btn=$('canvasZoomBtn');
+    if(btn) btn.textContent = on ? '⛶ 拡大中' : '⛶ キャンバス拡大';
+  }
+  $('canvasZoomBtn')?.addEventListener('click',()=>setCanvasZoom(true));
+  $('canvasZoomCloseBtn')?.addEventListener('click',()=>setCanvasZoom(false));
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape' && $('canvasWrap')?.classList.contains('zoomed')) setCanvasZoom(false); });
+
+  function drawingAllowed(){ return !!viewGame && !viewGame.over && viewGame.phase === 'draw' && !mySubmitted && !earlyFinished; }
+  function namingAllowed(){ return !!viewGame && !viewGame.over && !mySubmitted && (viewGame.phase === 'naming' || (viewGame.phase === 'draw' && earlyFinished)); }
+  function supportRemainingMine(){ return viewGame ? Math.max(0, SUPPORT_LIMIT - viewGame.my.supportUsed) : SUPPORT_LIMIT; }
+  function supportRemainingOpp(){ return viewGame ? Math.max(0, SUPPORT_LIMIT - viewGame.opp.supportUsed) : SUPPORT_LIMIT; }
+  function canChooseSupport(){ return supportRemainingMine() > 0; }
+
+  function setSelectedType(type){
+    if(type === 'support' && !canChooseSupport()) type = 'monster';
+    selectedType = type;
+    $('monsterTypeBtn').className = 'typeBtn' + (selectedType === 'monster' ? ' active monster' : '');
+    $('supportTypeBtn').className = 'typeBtn support' + (selectedType === 'support' ? ' active support' : '');
+    $('supportTypeBtn').disabled = !canChooseSupport() || !(drawingAllowed() || namingAllowed());
+    $('selectedTypePill').className = 'pill ' + (selectedType === 'monster' ? 'monster' : 'support');
+    $('selectedTypePill').textContent = '現在: ' + (selectedType === 'monster' ? 'モンスター' : 'サポート');
+    refreshPreview();
+  }
+  $('monsterTypeBtn').onclick = () => setSelectedType('monster');
+  $('supportTypeBtn').onclick = () => setSelectedType('support');
+
+  function pointFromEvent(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*(canvas.width/r.width),y:(e.clientY-r.top)*(canvas.height/r.height)};}
+  function updateUndoButton(){
+    const btn=$('undoBtn');
+    if(btn) btn.disabled = !drawingAllowed() || drawHistory.length === 0;
+  }
+  function resetDrawHistory(){ drawHistory=[]; updateUndoButton(); }
+  function pushDrawHistory(){
+    if(!drawingAllowed()) return;
+    try{
+      drawHistory.push(ctx.getImageData(0,0,canvas.width,canvas.height));
+      if(drawHistory.length > DRAW_HISTORY_LIMIT) drawHistory.shift();
+    }catch(_){ return; }
+    updateUndoButton();
+  }
+  function undoDraw(){
+    if(!drawingAllowed() || !drawHistory.length) return;
+    const prev=drawHistory.pop();
+    ctx.putImageData(prev,0,0);
+    markAiDirty();
+    refreshPreview();
+    updateUndoButton();
+  }
+  function markAiDirty(){ aiGeneration++; aiAnalyzing=false; aiVisual=null; aiRoundToken=''; if($('aiStatus')) $('aiStatus').textContent='未解析'; }
+  function pressureWidth(e){if(e.pointerType==='pen' && typeof e.pressure==='number' && e.pressure>0){return Math.max(1.5,brushSize*(0.35+e.pressure*1.25));}return brushSize;}
+  function drawDot(pt,width){markAiDirty();ctx.fillStyle=erasing?'#ffffff':brushColor;ctx.beginPath();ctx.arc(pt.x,pt.y,width/2,0,Math.PI*2);ctx.fill();}
+  function hexRgb(hex){ const h=hex.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16),255]; }
+  function bucketFill(pt){
+    if(!drawingAllowed()) return;
+    const w=canvas.width,h=canvas.height,x=Math.max(0,Math.min(w-1,Math.floor(pt.x))),y=Math.max(0,Math.min(h-1,Math.floor(pt.y)));
+    const img=ctx.getImageData(0,0,w,h),d=img.data, start=(y*w+x)*4, target=[d[start],d[start+1],d[start+2],d[start+3]], fill=hexRgb(brushColor);
+    if(Math.abs(target[0]-fill[0])+Math.abs(target[1]-fill[1])+Math.abs(target[2]-fill[2])<6) return;
+    pushDrawHistory();
+    const tol=22, total=w*h, q=new Int32Array(total), seen=new Uint8Array(total); let head=0,tail=0; q[tail++]=y*w+x; seen[y*w+x]=1;
+    const match=i=>{const k=i*4;return Math.abs(d[k]-target[0])<=tol&&Math.abs(d[k+1]-target[1])<=tol&&Math.abs(d[k+2]-target[2])<=tol&&Math.abs(d[k+3]-target[3])<=tol;};
+    while(head<tail){ const i=q[head++]; if(!match(i)) continue; const k=i*4; d[k]=fill[0];d[k+1]=fill[1];d[k+2]=fill[2];d[k+3]=255; const px=i%w,py=(i/w)|0;
+      if(px>0&&!seen[i-1]){seen[i-1]=1;q[tail++]=i-1;} if(px<w-1&&!seen[i+1]){seen[i+1]=1;q[tail++]=i+1;} if(py>0&&!seen[i-w]){seen[i-w]=1;q[tail++]=i-w;} if(py<h-1&&!seen[i+w]){seen[i+w]=1;q[tail++]=i+w;}
+    }
+    ctx.putImageData(img,0,0); markAiDirty(); refreshPreview();
+  }
+  function startDraw(e){if(!drawingAllowed())return;e.preventDefault();const pt=pointFromEvent(e);if(bucketMode){bucketFill(pt);return;}pushDrawHistory();drawing=true;try{canvas.setPointerCapture(e.pointerId);}catch(_){}last=pt;drawDot(last,pressureWidth(e));}
+  function moveDraw(e){if(!drawing)return;e.preventDefault();markAiDirty();const pt=pointFromEvent(e);ctx.strokeStyle=erasing?'#ffffff':brushColor;ctx.lineWidth=pressureWidth(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(pt.x,pt.y);ctx.stroke();last=pt;}
+  function endDraw(e){drawing=false;last=null;if(e&&e.pointerId!=null){try{canvas.releasePointerCapture(e.pointerId);}catch(_){}}}
+  canvas.addEventListener('pointerdown',startDraw);canvas.addEventListener('pointermove',moveDraw);canvas.addEventListener('pointerup',endDraw);canvas.addEventListener('pointercancel',endDraw);canvas.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse')endDraw(e);});
+
+  function clearCanvas(recordHistory=false){
+    if(recordHistory && drawingAllowed()) pushDrawHistory();
+    else if(!recordHistory) resetDrawHistory();
+    ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);$('cardName').value='';markAiDirty();refreshPreview();updateUndoButton();
+  }
+  $('undoBtn').onclick = undoDraw;
+  $('clearBtn').onclick = () => clearCanvas(true); $('previewBtn').onclick = refreshPreview;
+  document.addEventListener('keydown',e=>{
+    if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='z' && drawingAllowed()){
+      e.preventDefault(); undoDraw();
+    }
+  });
+
+  function detectElement(nameInfo, avgR, avgG, avgB, role){
+    const fire = avgR > avgG*1.08 && avgR > avgB*1.08 || nameInfo.fireWord;
+    const water = avgB > avgR*1.06 && avgB > avgG*1.02 || nameInfo.waterWord;
+    const earth = avgG > avgR*1.05 && avgG > avgB*1.03 || nameInfo.earthWord;
+    const wind = nameInfo.windWord || (!fire && !water && !earth && avgB + avgG > avgR + 40);
+    const light = nameInfo.lightWord;
+    const shadow = nameInfo.shadowWord || role === 'chaos';
+    if(light && !shadow) return 'light';
+    if(shadow && !light) return 'shadow';
+    if(fire) return 'fire';
+    if(water) return 'water';
+    if(earth) return 'earth';
+    if(wind) return 'wind';
+    return role === 'heal' ? 'light' : role === 'chaos' ? 'shadow' : 'earth';
+  }
+
+  function analyzeName(name, kind){
+    const n = normalizeName(name);
+    const attackWords = ['炎','火','ほのお','剣','ソード','ブレード','斬','雷','いかずち','サンダー','砲','キャノン','ドラゴン','竜','牙','パンチ','弾','ミサイル','blade','fire','thunder','dragon'];
+    const defendWords = ['盾','シールド','壁','ガード','守','鉄壁','要塞','バリア','armor','guard','fort'];
+    const healWords = ['回復','ヒール','薬','ハート','天使','光','聖','いやし','heal','angel','cure'];
+    const chaosWords = ['呪','呪い','闇','死','毒','カオス','悪夢','混沌','curse','dark','chaos','poison'];
+    const fastWords = ['速','風','疾風','雷','dash','swift'];
+    const pierceWords = ['槍','ドリル','貫','pierce','ランス'];
+    const drainWords = ['吸','ドレイン','vamp','blood'];
+    const powerWords = ['超','究極','最強','伝説','神','終焉','覇王','オメガ','mega','ultimate','god'];
+
+    let roleBias = 'neutral';
+    const counts = { attack: countHits(n, attackWords), defend: countHits(n, defendWords), heal: countHits(n, healWords), chaos: countHits(n, chaosWords) };
+    const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]); if(sorted[0][1] > 0) roleBias = sorted[0][0];
+
+    let supportType = 'neutral';
+    if(kind === 'support'){
+      if(hasAny(n,['応援','太鼓','旗','力','boost','buff','援護'])) supportType='boost';
+      else if(hasAny(n,['盾','壁','守','バリア','シールド','guard','fort'])) supportType='barrier';
+      else if(hasAny(n,['回復','薬','天使','ハート','ヒール','cure','heal'])) supportType='heal';
+      else if(hasAny(n,['呪','毒','闇','妨害','封印','curse','poison'])) supportType='curse';
+      else if(hasAny(n,['集中','狙','照準','眼','focus','scope'])) supportType='focus';
+      else if(hasAny(n,['鏡','反射','ミラー','mirror'])) supportType='mirror';
+      else if(hasAny(n,['奇跡','祝福','神託','miracle'])) supportType='miracle';
+      else if(hasAny(n,['運','混沌','カオス','悪夢','ルーレット','chaos'])) supportType='chaos';
+      else if(roleBias !== 'neutral') supportType = typeToSupportFallback[roleBias] || 'boost';
+    }
+
+    return {
+      roleBias, supportType,
+      powerBonus: countHits(n,powerWords)*6 + countHits(n,attackWords.concat(defendWords,healWords,chaosWords))*2,
+      powerBoost: countHits(n,powerWords) + Math.min(2, countHits(n, attackWords.concat(defendWords,healWords,chaosWords))),
+      critBoost: countHits(n, fastWords)*0.07,
+      shieldBoost: countHits(n, defendWords),
+      healBoost: countHits(n, healWords),
+      attackBoost: countHits(n, attackWords),
+      chaosBoost: countHits(n, chaosWords),
+      pierce: hasAny(n, pierceWords),
+      drain: hasAny(n, drainWords),
+      fast: hasAny(n, fastWords),
+      fireWord: hasAny(n,['炎','火','fire','ほのお','爆']),
+      waterWord: hasAny(n,['水','氷','wave','aqua','ice']),
+      earthWord: hasAny(n,['地','岩','stone','rock','森']),
+      windWord: hasAny(n,['風','疾風','羽','wind','storm']),
+      lightWord: hasAny(n,['光','聖','天使','sun','holy']),
+      shadowWord: hasAny(n,['闇','呪','死','shadow','dark'])
+    };
+  }
+
+  function decideRole(r,g,b,dark){
+    if(dark > 0.68 && r+g+b < 350) return 'chaos';
+    if(r > g*1.12 && r > b*1.12) return 'attack';
+    if(b > r*1.08 && b > g*1.05) return 'defend';
+    if(g > r*1.08 && g > b*1.05) return 'heal';
+    if((r+b) > g*1.35) return 'chaos';
+    return dark > 0.48 ? 'attack' : 'defend';
+  }
+
+  function decideElement(r,g,b,dark,name){
+    const n=normalizeName(name);
+    if(hasAny(n,['炎','火','ほのお','爆','マグマ','fire'])) return 'fire';
+    if(hasAny(n,['水','海','氷','雪','アクア','water','ice'])) return 'water';
+    if(hasAny(n,['雷','電','稲妻','サンダー','thunder'])) return 'thunder';
+    if(hasAny(n,['風','嵐','空','wind'])) return 'wind';
+    if(hasAny(n,['土','岩','大地','山','earth','rock'])) return 'earth';
+    if(hasAny(n,['光','聖','天使','holy','light'])) return 'light';
+    if(hasAny(n,['闇','影','死','悪魔','dark','shadow'])) return 'dark';
+    if(dark>0.72) return 'dark';
+    if(r>g*1.15 && r>b*1.15) return 'fire';
+    if(b>r*1.12 && b>g*1.08) return 'water';
+    if(g>r*1.08 && g>b*1.05) return 'earth';
+    if(r>180 && g>160 && b<120) return 'thunder';
+    return 'neutral';
+  }
+  function elementLabel(e){return ({fire:'炎',water:'水',thunder:'雷',wind:'風',earth:'土',light:'光',dark:'闇',neutral:'無'})[e]||'無';}
+  function elementMultiplier(a,b){
+    const strong={fire:['earth'],water:['fire'],thunder:['water'],wind:['earth'],earth:['thunder'],light:['dark'],dark:['light']};
+    const weak={fire:['water'],water:['thunder'],thunder:['earth'],wind:['thunder'],earth:['wind'],light:['light'],dark:['dark']};
+    if((strong[a]||[]).includes(b)) return 1.35;
+    if((weak[a]||[]).includes(b)) return 0.75;
+    return 1;
+  }
+
+  function elementName(key){ return {fire:'火',water:'水',earth:'地',wind:'風',light:'光',shadow:'闇'}[key] || '無'; }
+
+  function normalizedGroupScores(output, groups){
+    const by = Object.fromEntries(output.map(x => [x.label, Number(x.score)||0]));
+    const result = {};
+    for(const [key, labels] of Object.entries(groups)){
+      const vals = labels.map(l => by[l] || 0);
+      const sum = vals.reduce((a,b)=>a+b,0) || 1;
+      result[key] = vals.reduce((a,b)=>a+b,0) / sum;
+    }
+    return result;
+  }
+
+  function pickGroup(output, mapping){
+    const by = Object.fromEntries(output.map(x => [x.label, Number(x.score)||0]));
+    const entries = Object.entries(mapping).map(([key,labels]) => [key, labels.reduce((a,l)=>a+(by[l]||0),0)]).sort((a,b)=>b[1]-a[1]);
+    const total = entries.reduce((a,x)=>a+x[1],0) || 1;
+    return { key:entries[0][0], confidence:entries[0][1]/total, margin:(entries[0][1]-(entries[1]?.[1]||0))/total, ranked:entries.map(([k,v])=>[k,v/total]) };
+  }
+
+  async function loadAiClassifier(force=false){
+    if(force){
+      aiClassifier = null;
+      aiLoadPromise = null;
+      aiVisual = null;
+      aiRoundToken = '';
+    }
+    if(aiClassifier) return aiClassifier;
+    if(aiLoadPromise) return aiLoadPromise;
+    $('aiStatus').textContent = 'AIモデル読込中…';
+    if($('aiProgress')) $('aiProgress').textContent = 'MobileCLIPの画像・文章モデルを準備しています。初回のみダウンロードが必要です。';
+
+    aiLoadPromise = (async()=>{
+      try{
+        const test = await fetch('https://huggingface.co/Xenova/mobileclip_s0/resolve/main/config.json', {cache:'no-store'});
+        if(!test.ok) throw new Error(`Hugging Face HTTP ${test.status}`);
+      }catch(netErr){
+        throw new Error(`AIモデル配信先へ接続できません: ${netErr?.message || netErr}`);
+      }
+
+      let mod;
+      try{
+        mod = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1');
+      }catch(importErr){
+        throw new Error(`AIライブラリを読み込めません: ${importErr?.message || importErr}`);
+      }
+
+      const {
+        AutoTokenizer,
+        CLIPTextModelWithProjection,
+        AutoProcessor,
+        CLIPVisionModelWithProjection,
+        RawImage,
+        dot,
+        softmax,
+        env
+      } = mod;
+
+      env.allowLocalModels = false;
+      env.allowRemoteModels = true;
+      env.useBrowserCache = true;
+
+      const progress_callback = (info) => {
+        if(!$('aiProgress') || !info) return;
+        const pct = Number.isFinite(info.progress) ? ` ${Math.round(info.progress)}%` : '';
+        const file = info.file ? ` / ${String(info.file).split('/').pop()}` : '';
+        const status = info.status ? String(info.status) : 'loading';
+        $('aiProgress').textContent = `AI ${status}${pct}${file}`;
+      };
+
+      // MobileCLIP is a split CLIP model (text_model + vision_model).  Using the generic
+      // zero-shot pipeline can make some Transformers.js builds look for model_quantized.onnx,
+      // which does not match this split architecture. Load each official component explicitly.
+      $('aiProgress').textContent = 'AIコンポーネント読込中…';
+      const common = { dtype: 'uint8', device: 'wasm', progress_callback };
+      const [tokenizer, textModel, processor, visionModel] = await Promise.all([
+        AutoTokenizer.from_pretrained(AI_MODEL, { progress_callback }),
+        CLIPTextModelWithProjection.from_pretrained(AI_MODEL, common),
+        AutoProcessor.from_pretrained(AI_MODEL, { progress_callback }),
+        CLIPVisionModelWithProjection.from_pretrained(AI_MODEL, common),
+      ]);
+
+      // Precompute text embeddings once. This makes each drawing analysis much faster.
+      const prompts = AI_LABELS.map(x => `a drawing of ${x}`);
+      const textInputs = tokenizer(prompts, { padding: 'max_length', truncation: true });
+      const { text_embeds } = await textModel(textInputs);
+      const textVectors = text_embeds.normalize().tolist();
+
+      const classifier = async (imageSource, labels=AI_LABELS) => {
+        // If labels differ from the cached set, compute text embeddings for those labels.
+        let vectors = textVectors;
+        if(labels !== AI_LABELS && JSON.stringify(labels) !== JSON.stringify(AI_LABELS)){
+          const customPrompts = labels.map(x => `a drawing of ${x}`);
+          const inputs = tokenizer(customPrompts, { padding:'max_length', truncation:true });
+          const out = await textModel(inputs);
+          vectors = out.text_embeds.normalize().tolist();
+        }
+        const image = await RawImage.read(imageSource);
+        const imageInputs = await processor(image);
+        const { image_embeds } = await visionModel(imageInputs);
+        const imageVector = image_embeds.normalize().tolist()[0];
+        const probs = softmax(vectors.map(v => 100 * dot(imageVector, v)));
+        return labels.map((label, i) => ({label, score: Number(probs[i]) || 0}))
+          .sort((a,b)=>b.score-a.score);
+      };
+
+      aiClassifier = classifier;
+      $('aiStatus').textContent = 'AI起動済み';
+      if($('aiProgress')) $('aiProgress').textContent = '画像AIの準備完了。描画終了後に自動解析します。';
+      return classifier;
+    })().catch(err=>{
+      aiLoadPromise=null;
+      console.warn('AI load failed',err);
+      $('aiStatus').textContent='AI起動失敗 → 従来判定';
+      if($('aiProgress')) $('aiProgress').textContent = `読込失敗: ${err?.message || err}。この文章をそのまま教えてください。`;
+      throw err;
+    });
+    return aiLoadPromise;
+  }
+
+  async function preloadAi(force=false){
+    try{ await loadAiClassifier(force); }
+    catch(e){ /* fallback is intentionally available */ }
+  }
+
+  function summarizeAi(output){
+    const role = pickGroup(output, {
+      attack:['an aggressive attacking warrior or weapon','a dragon','a sword or blade','an explosion or missile'],
+      defend:['an armored defensive guardian or shield','a shield or armor'],
+      heal:['a healing magical creature or angel','a potion or medicine','an angel'],
+      chaos:['a cursed chaotic dark creature','a demon or ghost']
+    });
+    const element = pickGroup(output, {
+      fire:['a fire elemental creature','an explosion or missile'],
+      water:['a water or ice elemental creature'],
+      thunder:['a lightning electric creature'],
+      wind:['a wind or storm creature'],
+      earth:['an earth rock nature creature'],
+      light:['a holy light creature','an angel'],
+      dark:['a dark shadow demon creature','a demon or ghost']
+    });
+    const support = pickGroup(output, {
+      boost:['an offensive power support item'],
+      barrier:['a protective shield support item'],
+      heal:['a healing potion support item'],
+      curse:['a curse poison debuff support item'],
+      focus:['a focus accuracy support item'],
+      chaos:['a chaotic random magical support item']
+    });
+    const by = Object.fromEntries(output.map(x=>[x.label,Number(x.score)||0]));
+    const strong = by['a powerful dangerous fantasy monster']||0;
+    const weak = by['a weak harmless cute creature']||0;
+    const strengthDelta = clamp((strong-weak)*80,-16,16);
+    return {role,element,support,strong,weak,strengthDelta,top:output.slice(0,5)};
+  }
+
+  async function ensureAiAnalysis(){
+    if(aiAnalyzing || aiVisual || !viewGame || viewGame.over || !namingAllowed() || mySubmitted) return;
+    const token = `${viewGame.round}:${canvas.toDataURL('image/png')}`;
+    const analysisGame=viewGame.startAt, generation=++aiGeneration;
+    const current=()=>generation===aiGeneration && aiRoundToken===token && viewGame?.startAt===analysisGame && namingAllowed();
+    if(aiRoundToken===token) return;
+    aiRoundToken=token; aiAnalyzing=true;
+    $('aiStatus').textContent='絵をAI解析中…'; if($('aiProgress')) $('aiProgress').textContent='描いたイラストを画像AIで判定しています…';
+    $('submitBtn').disabled=true;
+    let timeout;
+    try{
+      const image=canvas.toDataURL('image/png');
+      const analysis=(async()=>{
+        const classifier=await loadAiClassifier();
+        if(!current())throw Error('stale analysis');
+        const output=await classifier(image,AI_LABELS);
+        if(!current())throw Error('stale analysis');
+        const qualityOutput=await classifier(image,ART_QUALITY_LABELS);
+        return {output,qualityOutput};
+      })();
+      const {output,qualityOutput}=await Promise.race([analysis,new Promise((_,reject)=>{timeout=setTimeout(()=>reject(Error('AI timeout')),15000);})]);
+      if(!current()) return;
+      aiVisual = {...summarizeAi(output),artQuality:artQualityFromAi(qualityOutput)};
+      const r=aiVisual.role, e=aiVisual.element;
+      $('aiStatus').textContent='AI解析済み'; if($('aiProgress')) $('aiProgress').textContent='AI判定をカード能力へ反映しました。';
+      $('aiSummary').textContent=`AI推定: ${r.key} ${(r.confidence*100).toFixed(0)}% / 属性 ${e.key} ${(e.confidence*100).toFixed(0)}% / 絵の完成度（AI推定）${Math.round(aiVisual.artQuality)}/100`;
+    }catch(err){
+      if(!current()) return;
+      aiVisual = {failed:true,strengthDelta:0};
+      $('aiStatus').textContent='AI利用不可 → 従来判定'; if($('aiProgress')) $('aiProgress').textContent='AI解析に失敗したため、ルールベース判定で続行します。';
+      $('aiSummary').textContent='AIモデルを読み込めなかったため、輪郭・細部のまとまりによる簡易評価（完成度のAI推定なし）で続行します。';
+    }finally{
+      clearTimeout(timeout);
+      if(generation===aiGeneration && aiRoundToken===token){aiAnalyzing=false; refreshPreview(); setInputLocks();}
+    }
+  }
+
+  function applyAiToBase(base){
+    if(base)base.desc=describeCard(base);
+    if(!aiVisual || aiVisual.failed || !base) return base;
+    base.ai = {
+      role:aiVisual.role.key, roleConfidence:aiVisual.role.confidence,
+      element:aiVisual.element.key, elementConfidence:aiVisual.element.confidence,
+      support:aiVisual.support.key, supportConfidence:aiVisual.support.confidence,
+      artQuality:aiVisual.artQuality,
+      top:aiVisual.top
+    };
+    return base;
+  }
+
+
+  // A bounded structural estimate, not a measurement of artistic merit.
+  // Normalize the drawing bounds: painting larger/darker is never a bonus.
+  function measureArtQuality(data,w,h){
+    let x0=w,y0=h,x1=-1,y1=-1;
+    const inkAt=(x,y)=>{const i=(y*w+x)*4;return data[i+3]>0 && (data[i]+data[i+1]+data[i+2])/3<248;};
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(inkAt(x,y)){x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);}
+    if(x1<0)return {score:8,ceiling:8};
+    const n=64, pixels=new Float32Array(n*n*3), edges=new Uint8Array(n*n);
+    // Average samples suppress single-pixel noise before looking for contours.
+    for(let y=0;y<n;y++)for(let x=0;x<n;x++)for(let c=0;c<3;c++){
+      let sum=0;for(let dy=0;dy<2;dy++)for(let dx=0;dx<2;dx++){
+        const sx=Math.min(x1,Math.floor(x0+(x+(dx+.5)/2)*(x1-x0+1)/n));
+        const sy=Math.min(y1,Math.floor(y0+(y+(dy+.5)/2)*(y1-y0+1)/n));
+        const i=(sy*w+sx)*4;sum+=255+(data[i+c]-255)*data[i+3]/255;
+      }pixels[(y*n+x)*3+c]=sum/4;
+    }
+    let count=0,linked=0;const tiles=new Set();
+    for(let y=1;y<n-1;y++)for(let x=1;x<n-1;x++){
+      const i=y*n+x;let contrast=0;
+      for(const j of [i+1,i+n])for(let c=0;c<3;c++)contrast=Math.max(contrast,Math.abs(pixels[i*3+c]-pixels[j*3+c]));
+      if(contrast>28){edges[i]=1;count++;tiles.add((y>>3)*8+(x>>3));}
+    }
+    for(let y=1;y<n-1;y++)for(let x=1;x<n-1;x++)if(edges[y*n+x]){
+      let neighbors=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)if(dx||dy)neighbors+=edges[(y+dy)*n+x+dx];
+      if(neighbors>=1&&neighbors<=5)linked++;
+    }
+    const density=count/3844,coherence=count?linked/count:0;
+    const detail=Math.min(1,count/420),distribution=Math.min(1,tiles.size/28);
+    const noise=Math.max(0,(density-.28)/.42);
+    const score=Math.round(clamp(8+30*coherence*detail+24*distribution*detail-45*noise,8,62));
+    const ceiling=count<12?12:noise>.65?35:100;
+    return {score:Math.min(score,ceiling),ceiling};
+  }
+  const ART_QUALITY_LABELS=[
+    'a carefully finished illustration with clear intentional shapes, coherent details and balanced composition, in monochrome or color',
+    'a clear simple stylized illustration with deliberate clean contours and readable forms, in monochrome or color',
+    'an unfinished rough sketch with unclear forms and disconnected details',
+    'random scribbles, visual noise, a blank page or a flat single color fill without a recognizable drawing'
+  ];
+  function artQualityFromAi(output){
+    const weights=[100,78,38,8];
+    return output.reduce((sum,item)=>sum+(weights[ART_QUALITY_LABELS.indexOf(item.label)]||0)*item.score,0);
+  }
+
+  function analyzeCurrentCard(allowFallback=true){
+    const data = ctx.getImageData(0,0,canvas.width,canvas.height).data;
+    let ink=0,dark=0,rs=0,gs=0,bs=0,sat=0; const gray = new Float32Array(canvas.width*canvas.height);
+    for(let i=0,p=0;i<data.length;i+=4,p++){
+      const r=data[i], g=data[i+1], b=data[i+2], a=data[i+3], bright=(r+g+b)/3; gray[p]=bright;
+      if(a>0 && bright<248){ ink++; dark += 255-bright; rs += r; gs += g; bs += b; const mx=Math.max(r,g,b), mn=Math.min(r,g,b); sat += mx ? ((mx-mn)/mx) : 0; }
+    }
+    const name = $('cardName').value.trim() || (selectedType === 'monster' ? '名もなきモンスター' : '名もなきサポート');
+    if(ink < 120){
+      if(!allowFallback) return null;
+      const fallbackInfo = analyzeName(name, selectedType);
+      const fallbackElement = selectedType === 'monster' ? detectElement(fallbackInfo, 0, 0, 0, 'attack') : null;
+      return selectedType === 'monster'
+        ? {kind:'monster',name,score:8,role:'attack',element:'neutral',rarity:'COMMON',stats:{atk:4,shield:1},element:fallbackElement,nameInfo:fallbackInfo,image:canvas.toDataURL('image/png'),desc:'基礎攻撃4。最終戦闘力が高い側に1勝。',fallback:true}
+        : {kind:'support',name,score:8,role:'barrier',rarity:'COMMON',power:2,nameInfo:fallbackInfo,image:canvas.toDataURL('image/png'),desc:'自分に防御2を与える。絵が少なかったので弱め。',fallback:true};
+    }
+    let edges=0,checks=0;
+    for(let y=0;y<canvas.height-1;y+=2){for(let x=0;x<canvas.width-1;x+=2){const idx=y*canvas.width+x; if(Math.abs(gray[idx]-gray[idx+1])>35) edges++; if(Math.abs(gray[idx]-gray[idx+canvas.width])>35) edges++; checks+=2;}}
+    const coverage=ink/(canvas.width*canvas.height), avgDark=dark/ink/255, avgR=rs/ink, avgG=gs/ink, avgB=bs/ink, avgSat=sat/ink, edgeDensity=edges/checks;
+    const nameInfo = analyzeName(name, selectedType);
+    const art = measureArtQuality(data,canvas.width,canvas.height);
+    const aiQuality = aiVisual && !aiVisual.failed && Number.isFinite(aiVisual.artQuality) ? aiVisual.artQuality : null;
+    let score = Math.round(Math.min(art.ceiling, aiQuality===null ? art.score : art.score*.2+aiQuality*.8));
+    score = clamp(score, 8, 100);
+    const artRole = decideRole(avgR,avgG,avgB,avgDark);
+    const rarity = score>=90?'LEGEND':score>=75?'EPIC':score>=55?'RARE':'COMMON';
+
+    if(selectedType === 'monster'){
+      let role = nameInfo.roleBias !== 'neutral' ? nameInfo.roleBias : artRole;
+      if(nameInfo.roleBias==='neutral' && aiVisual && !aiVisual.failed && aiVisual.role.confidence>=0.34 && aiVisual.role.margin>=0.07) role=aiVisual.role.key;
+      const power = Math.max(1, Math.ceil(score / 10));
+      let atk = Math.max(3, power + (role==='attack'?5: role==='chaos'?3: role==='defend'?2:1) + nameInfo.attackBoost);
+      let shield = Math.max(0, Math.floor(power/2) + (role==='defend'?6: role==='chaos'?2:1) + nameInfo.shieldBoost);
+      if(score>=80) atk += 3; if(nameInfo.fast) atk += 1;
+      let element = detectElement(nameInfo, avgR, avgG, avgB, role);
+      const hasElementName = nameInfo.fireWord||nameInfo.waterWord||nameInfo.earthWord||nameInfo.windWord||nameInfo.lightWord||nameInfo.shadowWord;
+      if(!hasElementName && aiVisual && !aiVisual.failed && aiVisual.element.confidence>=0.30 && aiVisual.element.margin>=0.05) element=aiVisual.element.key==='dark'?'shadow':aiVisual.element.key;
+      const desc = describeCard({kind:'monster'});
+      return applyAiToBase({kind:'monster',name,score,role,rarity,stats:{atk,shield},element,nameInfo,image:canvas.toDataURL('image/png'),desc});
+    }
+
+    let supportType = nameInfo.supportType !== 'neutral' ? nameInfo.supportType : (typeToSupportFallback[artRole] || 'boost');
+    if(nameInfo.supportType==='neutral' && aiVisual && !aiVisual.failed && aiVisual.support.confidence>=0.28 && aiVisual.support.margin>=0.04) supportType=aiVisual.support.key;
+    const power = Math.max(2, Math.floor(score/12) + 2 + nameInfo.powerBoost);
+    const descMap = {[supportType]:describeCard({kind:'support',role:supportType})};
+    return applyAiToBase({kind:'support',name,score,role:supportType,rarity,nameInfo,power,image:canvas.toDataURL('image/png'),desc:descMap[supportType]});
+  }
+
+  function loadGallery(){
+    try{
+      const raw=localStorage.getItem(GALLERY_KEY);
+      const arr=raw?JSON.parse(raw):[];
+      return Array.isArray(arr)?arr:[];
+    }catch(e){return [];}
+  }
+  function trimGallery(list){
+    let ordinary=0;
+    return list.filter(entry=>entry.favorite===true || ++ordinary<=GALLERY_LIMIT);
+  }
+  function persistGallery(list){
+    try{localStorage.setItem(GALLERY_KEY,JSON.stringify(trimGallery(list)));return true;}
+    catch(e){
+      console.warn('Gallery save failed',e);
+      alert('ギャラリーを保存できませんでした。保存容量またはブラウザ設定を確認してください。既存のお気に入りは削除していません。');
+      return false;
+    }
+  }
+  function saveCardToGallery(card){
+    const list=loadGallery();
+    list.unshift({
+      id:globalThis.crypto?.randomUUID ? crypto.randomUUID() : Date.now()+'-'+Math.random().toString(36).slice(2),
+      createdAt:Date.now(),round:viewGame?.round||authGame?.round||1,
+      mode:gameMode==='cpu'?'CPU':'ONLINE',favorite:false,card:cloneCard(card)
+    });
+    return persistGallery(list);
+  }
+  let galleryDetailId=null;
+  function toggleGalleryFavorite(id){
+    const list=loadGallery(),entry=list.find(item=>item.id===id);
+    if(!entry)return;
+    entry.favorite=entry.favorite!==true;
+    if(!persistGallery(list))return;
+    renderGallery();
+    if(galleryDetailId===id){
+      const saved=loadGallery().find(item=>item.id===id);
+      if(saved)openGalleryDetail(saved);else closeGalleryDetail();
+    }
+  }
+  function renderGallery(){
+    const list=loadGallery();
+    const grid=$('galleryGrid');
+    grid.innerHTML='';
+    if(!list.length){
+      grid.innerHTML='<div class="galleryEmpty">まだカードはありません。<br>DDDでカードを作って提出すると、ここに自動保存されます。</div>';
+      return;
+    }
+    list.forEach(entry=>{
+      const item=document.createElement('div');
+      item.className='galleryItem';
+      const d=new Date(entry.createdAt);
+      item.innerHTML=cardHTML(entry.card)+`<div class="galleryMeta">${escapeHTML(entry.mode)} / ROUND ${entry.round}<br>${d.toLocaleString('ja-JP')}</div>`;
+      const star=document.createElement('button');
+      star.className='galleryFavorite';
+      star.type='button';
+      star.textContent=entry.favorite===true?'★ お気に入り':'☆ お気に入り';
+      star.setAttribute('aria-pressed',String(entry.favorite===true));
+      star.setAttribute('aria-label',entry.card.name+(entry.favorite===true?'のお気に入りを解除':'をお気に入りに登録'));
+      star.addEventListener('click',event=>{event.stopPropagation();toggleGalleryFavorite(entry.id);});
+      item.appendChild(star);
+      item.addEventListener('click',()=>openGalleryDetail(loadGallery().find(x=>x.id===entry.id)||entry));
+      grid.appendChild(item);
+    });
+  }
+  function openGallery(){ renderGallery(); $('galleryModal').classList.add('show'); }
+  function closeGallery(){ $('galleryModal').classList.remove('show'); }
+  function openGalleryDetail(entry){
+    galleryDetailId=entry.id;
+    $('galleryFavoriteBtn').textContent=entry.favorite===true?'★ お気に入り':'☆ お気に入り';
+    $('galleryFavoriteBtn').setAttribute('aria-pressed',String(entry.favorite===true));
+    $('galleryDetailCard').innerHTML=cardHTML(entry.card);
+    const d=new Date(entry.createdAt);
+    $('galleryDetailMeta').textContent=`${entry.mode} / ROUND ${entry.round} / ${d.toLocaleString('ja-JP')}`;
+    $('galleryDetail').classList.add('show');
+  }
+  function closeGalleryDetail(){ galleryDetailId=null; $('galleryDetail').classList.remove('show'); }
+
+  function cardHTML(card){
+    if(!card) return '';
+    const isSupport = card.kind === 'support';
+    const badgeClass = isSupport ? 'supportBadge' : card.role;
+    const displayRole=card.role==='heal'?'加護':card.role.toUpperCase();
+    const badgeText = isSupport ? `SUPPORT / ${displayRole}` : `${displayRole} / ${card.rarity}`;
+    const nums = isSupport ? `<span>✨ 効果 ${card.power}</span>` : `<span>⚔ 攻撃 ${card.stats.atk}</span><span>🛡 防御 ${card.stats.shield}</span>`; const elem = !isSupport ? `<span class="element">${elementLabel(card.element||'neutral')}</span>` : ''; 
+
+    return `<div class="card ${isSupport ? 'supportCard' : ''}"><div class="thumb"><img src="${card.image}" alt="card art"></div><div class="score">作品パワー ${card.score}</div><div class="meta"><div class="badge ${badgeClass}">${escapeHTML(badgeText)}</div>${elem}<div class="title">${escapeHTML(card.name)}</div><div class="desc">${escapeHTML(describeCard(card))}</div><div class="nums">${nums}</div></div></div>`;
+  }
+
+  function refreshPreview(){
+    const card = analyzeCurrentCard(false);
+    $('previewArea').innerHTML = card ? cardHTML(card) : 'まだ作成されていません。';
+    updateCreationState();
+  }
+  function updateCreationState(){
+    const card = analyzeCurrentCard(false);
+    $('creationState').textContent = `${selectedType === 'monster' ? 'モンスター' : 'サポート'} / ${card ? '描画あり' : '未作成'}`;
+  }
+
+  function createSubmissionCard(){ return analyzeCurrentCard(true); }
+  function canSubmit(){ return !!viewGame && !viewGame.over && namingAllowed() && !aiAnalyzing && ((gameMode==='cpu') || (!!conn && conn.open)) && (selectedType !== 'support' || canChooseSupport()); }
+  $('finishDrawingBtn').onclick = () => { if(!drawingAllowed()) return; earlyFinished = true; endDraw(); $('cardName').disabled = false; $('submitState').textContent = '描画を確定しました。カード名を付けて提出できます。'; setInputLocks(); setTimeout(ensureAiAnalysis,0); };
+  $('submitBtn').onclick = () => submitCurrent(false);
+  async function submitCurrent(auto){
+    if(!viewGame || viewGame.over || !namingAllowed() || mySubmitted) return;
+    const submissionRound=viewGame.round, submissionGame=viewGame.startAt;
+    if(!aiVisual && !aiAnalyzing){ await ensureAiAnalysis(); }
+    if(!viewGame || viewGame.round!==submissionRound || viewGame.startAt!==submissionGame || !namingAllowed())return;
+    if(aiAnalyzing) return;
+    if(!canSubmit()) return;
+    if(selectedType === 'support' && !canChooseSupport()){ alert('この試合ではサポートカードはもう使い切っています。'); setSelectedType('monster'); return; }
+    const card = createSubmissionCard();
+    saveCardToGallery(card);
+    mySubmitted = true;
+    if(gameMode==='cpu') cpuPlayerSubmit(card); else if(role === 'host') hostSubmit('host', card); else send({type:'submitCard', card,round:viewGame.round,startAt:viewGame.startAt});
+    $('submitState').textContent = auto ? '自動提出しました。相手の提出を待っています。' : '提出済み。相手の提出を待っています。';
+  }
+
+  function randomCode(){return 'drawfield-'+Math.random().toString(36).slice(2,8).toUpperCase();}
+  $('hostBtn').onclick = () => { cleanupPeer(); gameMode='online'; role='host'; const id=randomCode(); peer=new Peer(id); peer.on('open', pid=>{$('hostCode').textContent=pid;$('hostCodeWrap').style.display='block';setStatus('部屋を作成。相手の参加待ち','wait');}); peer.on('connection', c=>{if(conn&&conn.open){c.close();return;} setupConn(c);}); peer.on('error', e=>setStatus('接続エラー: '+e.type,'wait')); };
+  $('joinBtn').onclick = () => { const id=$('joinCode').value.trim(); if(!id){alert('コードを入力してください');return;} cleanupPeer(); gameMode='online'; role='guest'; peer=new Peer(); peer.on('open', ()=>setupConn(peer.connect(id,{reliable:true}))); peer.on('error', e=>setStatus('接続エラー: '+e.type,'wait')); };
+  $('copyBtn').onclick = async () => { try{ await navigator.clipboard.writeText($('hostCode').textContent); $('copyBtn').textContent='コピーしました'; } catch(e){ alert('コピーできませんでした。長押しでコピーしてください。'); } };
+
+  function cleanupPeer(){ clearTimeout(introTask); clearTimeout(drawTask); scheduledStart=null; remoteReady=false; clockOffset=0; clockSamples=0; bestClockRtt=Infinity; if(conn)try{conn.close();}catch(e){} if(peer)try{peer.destroy();}catch(e){} conn=null; peer=null; authGame=null; viewGame=null; mySubmitted=false; earlyFinished=false; stopLocalTimer(); clearCanvas(); setSelectedType('monster'); renderBattle(); setStatus('未接続','wait'); }
+  function setupConn(c){ conn=c; conn.on('open', ()=>{ setStatus('接続済み','ready'); if(role==='host') startHostGame(); else {send({type:'hello'});send({type:'clockPing',sent:Date.now()});} renderBattle(); announce('CONNECTED','event'); }); conn.on('data', onData); conn.on('close', ()=>{ setStatus('切断されました','wait'); authGame=null; viewGame=null; mySubmitted=false; stopLocalTimer(); renderBattle(); }); conn.on('error', ()=>setStatus('通信エラー','wait')); }
+  function setStatus(text, cls){ $('connStatus').textContent=text; $('connStatus').className=cls; }
+  function send(obj){ if(conn&&conn.open) conn.send(obj); }
+  function onData(m){ if(!m||!m.type) return;
+    if(m.type==='clockPing' && role==='host'){send({type:'clockPong',sent:m.sent,hostTime:Date.now()});return;}
+    if(m.type==='clockPong' && role==='guest'){
+      const rtt=Date.now()-m.sent;
+      if(rtt<bestClockRtt){bestClockRtt=rtt;clockOffset=m.hostTime+rtt/2-Date.now();}
+      if(++clockSamples<5) send({type:'clockPing',sent:Date.now()});
+      else {send({type:'clockReady'});renderBattle();} return;
+    }
+    if(m.type==='clockReady' && role==='host'){remoteReady=true;renderBattle();return;}
+    if(m.type==='hello'&&role==='host'){ if(!authGame) startHostGame(); else broadcastState(); }
+    else if(m.type==='state'){ viewGame=m.state; if(viewGame.phase==='draw' && viewGame.startAt && gameNow()<viewGame.deadline-DRAW_MS) viewGame.phase='roundIntro'; mySubmitted=!!m.state.mySubmitted; renderBattle(); }
+    else if(m.type==='submitCard'&&role==='host'){ if(m.round===authGame?.round && m.startAt===authGame?.startAt)hostSubmit('guest', m.card); }
+    else if(m.type==='battleReady'&&role==='host'){ markBattleReady('guest'); }
+    else if(m.type==='rematch'&&role==='host'){ startHostGame(); }
+  }
+  let remoteReady=false,clockOffset=0,clockSamples=0,bestClockRtt=Infinity;
+  let introTask=null,drawTask=null,scheduledStart=null;
+  function gameNow(){return Date.now()+(role==='guest'?clockOffset:0);}
+  function renderGameStart(){
+    const waiting=!viewGame || viewGame.phase==='waiting';
+    if(!$('gameStartPanel')) return;
+    $('gameStartPanel').hidden=!waiting && viewGame?.phase!=='roundIntro';
+    const allowed=waiting && viewGame && role==='host' && (gameMode==='cpu'||(conn?.open && remoteReady));
+    $('gameStartBtn').disabled=!allowed;
+    $('gameStartBtn').hidden=role==='guest';
+    $('gameStartStatus').textContent=viewGame?.phase==='roundIntro'?'ROUND 1 — 開始準備中':role==='guest'?'ホストのGAME STARTを待っています':allowed?'準備ができたらGAME START。演出後に60秒の描画開始。':gameMode==='cpu'?'準備ができたらGAME START。':conn?.open?'開始時刻を同期しています…':'2人の接続完了後にホストが開始できます。';
+  }
+  $('gameStartBtn')?.addEventListener('click',()=>{
+    if(!authGame || authGame.phase!=='waiting' || role!=='host' || (gameMode!=='cpu' && (!conn?.open || !remoteReady))) return;
+    authGame.phase='roundIntro';
+    authGame.startAt=Date.now()+(gameMode==='cpu'?100:1500);
+    authGame.deadline=authGame.startAt+1200+DRAW_MS;
+    authGame.announce=null;
+    broadcastState();
+  });
+  function scheduleOpening(){
+    const state=viewGame;
+    if(!state || state.phase!=='roundIntro' || scheduledStart===state.startAt)return;
+    clearTimeout(introTask);clearTimeout(drawTask);scheduledStart=state.startAt;
+    const valid=()=>viewGame?.phase==='roundIntro' && viewGame.startAt===state.startAt && (gameMode==='cpu'||conn?.open);
+    introTask=setTimeout(()=>{if(valid()){announce('ROUND 1','event');sfx('round');}},Math.max(0,state.startAt-gameNow()));
+    drawTask=setTimeout(()=>{
+      if(!valid())return;
+      if(role==='host'){authGame.phase='draw';broadcastState();}
+      else {viewGame.phase='draw';renderBattle();}
+    },Math.max(0,state.deadline-DRAW_MS-gameNow()));
+  }
+
+  function newSide(name){ return {name,shield:0,nextBoost:0,nextWeaken:0,wins:0,supportUsed:0,submitted:null,survivor:null,reflect:0,battleReady:false}; }
+  function chooseEvent(){
+    // 神イベントはレア。約78%のラウンドは何も起きない。
+    if(Math.random() < 0.78) return EVENTS[0];
+    const pool = EVENTS.filter(ev => ev.id !== 'calm');
+    const total = pool.reduce((a,b)=>a+b.weight,0);
+    let roll = Math.random()*total;
+    for(const ev of pool){ if((roll -= ev.weight) <= 0) return ev; }
+    return pool[0];
+  }
+
+  function startHostGame(){
+    if(role!=='host') return;
+    remoteReady=false; clockOffset=0; clockSamples=0; bestClockRtt=Infinity; scheduledStart=null;
+    lastFxKey=''; lastGodEventKey=''; aiVisual=null; aiRoundToken=''; authGame={round:1,phase:'waiting',startAt:null,over:false,deadline:null,fieldEvent:chooseEvent(),host:newSide('ホスト'),guest:newSide('ゲスト'),logs:['★ 接続完了。ホストのGAME STARTを待っています。'],lastClash:null,winner:null,announce:null};
+    if(authGame.fieldEvent.id!=='calm') authGame.logs.unshift(`★ 神イベント発生：「${authGame.fieldEvent.name}」 ${authGame.fieldEvent.desc}`);
+    mySubmitted=false; earlyFinished=false; clearCanvas(); setSelectedType('monster'); setBgmMood('draw'); broadcastState();
+  }
+  function cloneCard(card){ return card ? JSON.parse(JSON.stringify(card)) : null; }
+  function hostSubmit(who, card){
+    if(!authGame||authGame.over||!['draw','naming'].includes(authGame.phase)) return;
+    const side=authGame[who];
+    if(side.submitted) return;
+    if(card.kind==='support' && side.supportUsed>=SUPPORT_LIMIT) card.kind='monster';
+    if(card.kind==='support') side.supportUsed += 1;
+    side.submitted = cloneCard(card);
+    authGame.logs.unshift(`★ ${side.name}がカードを提出した。`);
+    if(authGame.host.submitted && authGame.guest.submitted) beginCardShowcase(); else broadcastState();
+  }
+
+  function eventApplyRoundStart(){
+    const {host:h,guest:g,fieldEvent:ev}=authGame;
+    if(ev.id==='meteor'){h.nextWeaken+=2;g.nextWeaken+=2;}
+    if(ev.id==='chaos'){h.nextBoost+=Math.floor(Math.random()*5);g.nextBoost+=Math.floor(Math.random()*5);}
+    if(ev.id==='blessing'){h.nextBoost+=3;g.nextBoost+=3;}
+    if(ev.id==='armorbreak'){h.shield=Math.floor(h.shield/2);g.shield=Math.floor(g.shield/2);}
+    if(ev.id==='reversal' && h.wins!==g.wins){
+      const low=h.wins<g.wins?h:g;const bonus=2+Math.abs(h.wins-g.wins)*2;
+      low.nextBoost+=bonus;authGame.logs.unshift('★ 逆転の天秤：'+low.name+'の次のモンスター戦 +'+bonus);
+    }
+  }
+
+  function attributeMultiplier(a,b){
+    if(!a || !b) return 1;
+    if(elementBeats[a] === b) return 1.35;
+    if(elementBeats[b] === a) return 0.75;
+    return 1;
+  }
+
+  function eventElementModifier(element){
+    const ev = authGame.fieldEvent?.id;
+    if(ev === 'holy') return element === 'light' ? 1.25 : element === 'shadow' ? 0.85 : 1;
+    if(ev === 'abyss') return element === 'shadow' ? 1.25 : element === 'light' ? 0.9 : 1;
+    return 1;
+  }
+
+  function initiative(card){
+    if(card.kind !== 'monster') return card.score + (card.nameInfo.fast ? 8 : 0);
+    let base = card.score + (card.nameInfo.fast ? 10 : 0) + (card.role==='attack'?3:0);
+    if(card.element === 'wind') base += 4;
+    return base;
+  }
+
+
+
+  function buildMonsterClashPower(card, me, oppCard){
+    const info=card.nameInfo||{};
+    const effects=[];
+    let power=card.stats.atk;
+    effects.push({icon:'⚔️',kind:'',text:`${me.name} 基礎攻撃力 ${power}`});
+
+    if(card.stats.shield>0){
+      const bonus=Math.max(1,Math.round(card.stats.shield*0.55));
+      power+=bonus;
+      effects.push({icon:'🛡️',kind:'good',text:`防御型特性：攻撃力 +${bonus}`});
+    }
+    if(card.role==='chaos'){
+      const chaos=randPick([-3,0,3,6]);
+      power=Math.max(0,power+chaos);
+      effects.push({icon:'🌀',kind:chaos>=0?'good':'bad',text:`カオス補正：攻撃力 ${chaos>=0?'+':''}${chaos}`});
+    }
+
+    if(info.fast){ power+=2; effects.push({icon:'💨',kind:'good',text:'高速特性：攻撃力 +2'}); }
+    if(info.pierce){ power+=2; effects.push({icon:'🗡️',kind:'good',text:'貫通特性：攻撃力 +2'}); }
+    if(info.drain){ power+=1; effects.push({icon:'🩸',kind:'good',text:'吸収特性：攻撃力 +1'}); }
+
+    const mult=elementMultiplier(card.element||'neutral',oppCard.element||'neutral');
+    if(mult!==1){
+      const before=power;
+      power=Math.max(0,Math.round(power*mult));
+      effects.push({icon:mult>1?'🔥':'💧',kind:'attr',text:`属性相性 ${elementLabel(card.element)} → ${elementLabel(oppCard.element)}：${before} → ${power} (${mult>1?'有利 x1.35':'不利 x0.75'})`});
+    }else{
+      effects.push({icon:'◈',kind:'attr',text:`属性相性：等倍 (${elementLabel(card.element)} vs ${elementLabel(oppCard.element)})`});
+    }
+
+    const fieldMod=eventElementModifier(card.element||'neutral');
+    if(fieldMod!==1){
+      const before=power;
+      power=Math.max(0,Math.round(power*fieldMod));
+      effects.push({icon:'🌌',kind:fieldMod>1?'good':'bad',text:`神イベント属性補正：${before} → ${power}`});
+    }
+
+    const critRate=(card.score>=75?0.22:0.12)+(info.critBoost||0);
+    if(Math.random()<critRate){ power+=4; effects.push({icon:'💥',kind:'good',text:'会心！ 攻撃力 +4'}); }
+
+    // 神の横槍はごく稀。イベントとは別枠だが、頻発しない。
+    const fate=Math.random();
+    if(fate<0.012){ const before=power; power*=2; effects.push({icon:'⚡',kind:'good',text:`神の一閃：攻撃力2倍 ${before} → ${power}`}); }
+    else if(fate<0.024){ power=0; effects.push({icon:'☠️',kind:'bad',text:'神の悪戯：攻撃力が0になった！'}); }
+    else if(fate<0.040){ power+=5; effects.push({icon:'✨',kind:'good',text:'突然の加護：攻撃力 +5'}); }
+
+    const bonus=(me.nextBoost||0)+(me.shield||0)-(me.nextWeaken||0);
+    if(bonus)effects.push({icon:'✨',kind:bonus>0?'good':'bad',text:'次戦効果：戦闘力 '+(bonus>0?'+':'')+bonus});
+    power+=bonus;
+    if(authGame.fieldEvent?.id==='double'){power*=2;effects.push({icon:'⚔️',kind:'attr',text:'双撃の祭壇：戦闘力2倍'});}
+    me.nextBoost=0;me.nextWeaken=0;me.shield=0;
+    return {power:Math.max(0,Math.round(power)),effects};
+  }
+
+  function useSupport(card,me,op){
+    let type=card.role;
+    if(type==='chaos'||type==='miracle')type=randPick(['boost','barrier','heal','curse','focus','mirror']);
+    const gap=Math.max(0,op.wins-me.wins);
+    const p=Math.max(3,Math.round(card.power*(1+gap*.2)));
+    const result={boost:0,weaken:0,shield:0};
+    if(type==='curse')result.weaken=p;
+    else if(type==='barrier')result.shield=p;
+    else if(type==='focus'||type==='mirror'){result.boost=Math.ceil(p/2);result.weaken=Math.ceil(p/2);}
+    else result.boost=p;
+    if(authGame.fieldEvent?.id==='mirror'){result.boost=Math.ceil(result.boost*1.5);result.shield=Math.ceil(result.shield*1.5);}
+    me.nextBoost+=result.boost;me.shield+=result.shield;op.nextWeaken+=result.weaken;
+    authGame.logs.unshift('★ '+me.name+'のサポート発動。次のモンスター戦に効果を保存。勝利数の加算なし。');
+    return result;
+  }
+  function supportDetail(card,result,ownerLabel){
+    return [{icon:'✨',kind:'good',text:ownerLabel+'：次のモンスター戦で強化 +'+result.boost+' / 防御加算 +'+result.shield+' / 相手弱体 -'+result.weaken}];
+  }
+  function describeCard(card){
+    if(card.kind==='monster')return '攻撃・防御・属性から最終戦闘力を計算。高い側が1勝、同点はDRAW。';
+    const descriptions={boost:'次のモンスター戦で自分の戦闘力を強化。',heal:'加護：次のモンスター戦で自分の戦闘力を強化。',barrier:'次のモンスター戦で防御を戦闘力に加算。',curse:'相手の次のモンスター戦の戦闘力を弱体化。',focus:'次のモンスター戦で自分を強化し、相手を弱体化。',mirror:'次のモンスター戦で自分を強化し、相手を弱体化。',miracle:'強化・防御・弱体化のいずれかを次戦へ付与。',chaos:'強化・防御・弱体化のいずれかを次戦へ付与。'};
+    return (descriptions[card.role]||descriptions.boost)+' 勝利数で劣勢なら効果増幅。使用ラウンドは勝利数加算なし。';
+  }
+
+  function beginCardShowcase(){
+    if(!authGame || authGame.over || !authGame.host.submitted || !authGame.guest.submitted) return;
+    authGame.phase='reveal';
+    authGame.host.battleReady=false;
+    authGame.guest.battleReady=(gameMode==='cpu');
+    authGame.announce={text:'CARD REVEAL',cls:'event'};
+    authGame.logs.unshift('★ 両者のカードを公開！ イラスト・名前・ステータスをじっくり確認し、準備ができたらBATTLE READYを押そう。');
+    if(gameMode==='cpu') authGame.logs.unshift('★ CPUはBATTLE READY。あなたの開始操作を待っている。');
+    broadcastState();
+  }
+
+  function markBattleReady(who){
+    if(!authGame || authGame.over || authGame.phase!=='reveal') return;
+    const side=authGame[who];
+    if(side.battleReady) return;
+    side.battleReady=true;
+    authGame.logs.unshift(`★ ${side.name}：BATTLE READY！`);
+    if(authGame.host.battleReady && authGame.guest.battleReady) startBattleSequence();
+    else broadcastState();
+  }
+
+  function requestBattleReady(){
+    if(!viewGame || viewGame.over || viewGame.phase!=='reveal' || viewGame.myBattleReady) return;
+    if(role==='host') markBattleReady('host');
+    else send({type:'battleReady'});
+  }
+  $('battleReadyBtn').onclick=requestBattleReady;
+
+  function startBattleSequence(){
+    if(!authGame || authGame.over || authGame.phase!=='reveal') return;
+    const showcaseRound=authGame.round;
+    authGame.phase='standby';
+    authGame.announce={text:'STANDBY...',cls:'event'};
+    authGame.logs.unshift('★ 両者READY！ STANDBY...');
+    broadcastState();
+    setTimeout(()=>{
+      if(!authGame || authGame.over || authGame.round!==showcaseRound || authGame.phase!=='standby') return;
+      authGame.phase='battleIntro';
+      authGame.announce={text:'BATTLE!!',cls:'hit'};
+      authGame.logs.unshift('★ BATTLE!!');
+      setBgmMood('battle');
+      sfx('clash');
+      broadcastState();
+      setTimeout(()=>{
+        if(!authGame || authGame.over || authGame.round!==showcaseRound || authGame.phase!=='battleIntro') return;
+        resolveRound();
+      },1400);
+    },1400);
+  }
+
+  function resolveRound(){
+    authGame.phase='battle';
+    const h=authGame.host.submitted, g=authGame.guest.submitted;
+    authGame.logs.unshift(`★ ROUND ${authGame.round}：${h.name} VS ${g.name}`);
+    authGame.logs.unshift(`★ 神イベント：「${authGame.fieldEvent.name}」`);
+    authGame.host.reflect = 0; authGame.guest.reflect = 0;
+    eventApplyRoundStart();
+    let roundWinner=null;
+    if(h.kind==='monster' && g.kind==='monster'){
+      announce('DIVINE CLASH','hit');setBgmMood('battle');sfx('clash');
+      const hb=buildMonsterClashPower(h,authGame.host,g),gb=buildMonsterClashPower(g,authGame.guest,h);
+      roundWinner=hb.power===gb.power?null:hb.power>gb.power?'host':'guest';
+      authGame.battleDetails={type:'monsterClash',hostPower:hb.power,guestPower:gb.power,diff:Math.abs(hb.power-gb.power),winner:roundWinner||'draw',hostEffects:hb.effects,guestEffects:gb.effects};
+      authGame.logs.unshift('★ 最終戦闘力 '+hb.power+' 対 '+gb.power+'。'+(roundWinner?'勝者に1勝。':'DRAW：勝利数加算なし。'));
+    }else{
+      announce('SUPPORT','event');sfx('support');
+      const hostEffects=h.kind==='support'?supportDetail(h,useSupport(h,authGame.host,authGame.guest),'ホスト'):[];
+      const guestEffects=g.kind==='support'?supportDetail(g,useSupport(g,authGame.guest,authGame.host),'ゲスト'):[];
+      authGame.battleDetails={type:'support',hostEffects,guestEffects};
+    }
+
+
+
+    // 次ラウンドへ残れるのは「ラウンド勝者のモンスター」だけ。
+    // 敗者カードは必ず消滅させる。これにより、サポートvsモンスター等で
+    // 負けた側のモンスターが誤ってsurvivorとして残り、次ラウンドで描けなくなるのを防ぐ。
+    if(!roundWinner){
+      authGame.host.survivor = null;
+      authGame.guest.survivor = null;
+      authGame.host.submitted = null;
+      authGame.guest.submitted = null;
+      authGame.host.battleReady = false;
+      authGame.guest.battleReady = false;
+    } else {
+      const loser = roundWinner==='host' ? 'guest' : 'host';
+      const winnerCard = roundWinner==='host' ? h : g;
+      authGame[loser].survivor = null;
+      authGame[loser].submitted = null;
+      authGame[loser].battleReady = false;
+      authGame[roundWinner].survivor = winnerCard?.kind==='monster' ? cloneCard(winnerCard) : null;
+    }
+
+    if(roundWinner) authGame[roundWinner].wins = (authGame[roundWinner].wins||0) + 1;
+    const result = !roundWinner ? 'このラウンドは引き分け！' : roundWinner==='host' ? `ホストがラウンド勝利！ (${authGame.host.wins}/${WIN_TARGET})` : `ゲストがラウンド勝利！ (${authGame.guest.wins}/${WIN_TARGET})`;
+    authGame.logs.unshift('★ '+result);
+    authGame.lastClash = {round:authGame.round, host:cloneCard(h), guest:cloneCard(g), result, fieldEvent: authGame.fieldEvent, battleDetails: authGame.battleDetails};
+    authGame.announce = { text: !roundWinner ? 'DRAW' : roundWinner==='host' ? `HOST WIN ${authGame.host.wins}/${WIN_TARGET}` : `GUEST WIN ${authGame.guest.wins}/${WIN_TARGET}`, cls: !roundWinner ? 'event' : 'win' };
+
+    if(authGame.host.wins>=WIN_TARGET || authGame.guest.wins>=WIN_TARGET){
+      authGame.over=true; authGame.phase='over';
+      authGame.winner = authGame.host.wins>=WIN_TARGET ? `ホストの勝ち！ ${authGame.host.wins}-${authGame.guest.wins}` : `ゲストの勝ち！ ${authGame.guest.wins}-${authGame.host.wins}`;
+      authGame.logs.unshift(`★ 先に${WIN_TARGET}勝達成！ ${authGame.winner}`); authGame.announce = { text: authGame.winner, cls:'win' }; broadcastState(); return;
+    }
+    authGame.phase='roundEnd'; authGame.announce = { text:'ROUND '+authGame.round+' COMPLETE', cls:'event' }; authGame.logs.unshift(`★ ROUND ${authGame.round} 終了。結果を確認しよう。`); broadcastState();
+    const finishedRound = authGame.round, finishedGame=authGame;
+    setTimeout(()=>{
+      if(authGame!==finishedGame || !authGame || authGame.over || authGame.phase!=='roundEnd' || authGame.round!==finishedRound) return;
+      authGame.phase='cardVanish'; authGame.announce = { text:'DEFEATED CARD DESTROYED', cls:'event' };
+      const survivors=[];
+      if(authGame.host.survivor) survivors.push(`ホスト「${authGame.host.survivor.name}」`);
+      if(authGame.guest.survivor) survivors.push(`ゲスト「${authGame.guest.survivor.name}」`);
+      authGame.logs.unshift(survivors.length ? `★ 敗北・使用済みカードが消滅。${survivors.join(' / ')} は生存し次ラウンドへ続投！` : '★ このラウンドのカードは消滅する。');
+      broadcastState();
+      setTimeout(()=>{
+        if(authGame!==finishedGame || !authGame || authGame.over || authGame.phase!=='cardVanish' || authGame.round!==finishedRound) return;
+        authGame.round += 1; authGame.phase='draw'; aiVisual=null; aiRoundToken=''; authGame.deadline=Date.now()+DRAW_MS;
+        for(const side of [authGame.host,authGame.guest]){
+          if(side.survivor?.kind!=='monster')side.survivor=null;
+          side.submitted=cloneCard(side.survivor);
+        }
+        authGame.host.battleReady=false; authGame.guest.battleReady=false; authGame.lastClash=null; authGame.fieldEvent = chooseEvent();
+        if(authGame.host.submitted && authGame.guest.submitted) beginCardShowcase();
+        if(gameMode==='cpu' && authGame.host.submitted && !authGame.guest.submitted){
+          const game=authGame, round=game.round;
+          setTimeout(()=>{if(authGame===game && game.round===round && game.phase==='draw') hostSubmit('guest',makeCpuCard());},700);
+        }
+        authGame.logs.unshift(`★ ROUND ${authGame.round} 開始。${authGame.host.submitted||authGame.guest.submitted?'生き残ったモンスターが盤面に残っている。倒された側だけ新しいカードを描こう。':'新しいカードを描こう。'}`);
+        if(authGame.fieldEvent.id!=='calm') authGame.logs.unshift(`★ 神イベント発生：「${authGame.fieldEvent.name}」 ${authGame.fieldEvent.desc}`); authGame.announce = { text:'ROUND '+authGame.round, cls:'event' }; setBgmMood('draw'); sfx('round'); broadcastState();
+      }, 2200);
+    }, 8000);
+  }
+
+  function publicStateFor(who){
+    const me = authGame[who], opp = who==='host' ? authGame.guest : authGame.host;
+    return { round:authGame.round, startAt:authGame.startAt, phase:authGame.phase, over:authGame.over, winner:authGame.winner, deadline:authGame.deadline, fieldEvent:authGame.fieldEvent, announce: authGame.announce, announceToken: `${authGame.round}-${authGame.phase}-${authGame.announce?.text || ''}`, my:{shield:me.shield,nextBoost:me.nextBoost,nextWeaken:me.nextWeaken,wins:me.wins||0,supportUsed:me.supportUsed,hasSurvivor:!!me.survivor}, opp:{shield:opp.shield,nextBoost:opp.nextBoost,nextWeaken:opp.nextWeaken,wins:opp.wins||0,supportUsed:opp.supportUsed,hasSurvivor:!!opp.survivor}, mySubmitted:!!me.submitted, oppSubmitted:!!opp.submitted, myBattleReady:!!me.battleReady, oppBattleReady:!!opp.battleReady, myCard:cloneCard(me.submitted), oppCard:['reveal','standby','battleIntro','battle','roundEnd','cardVanish','over'].includes(authGame.phase)?cloneCard(opp.submitted):null, lastClash:authGame.lastClash ? {round:authGame.lastClash.round, me:cloneCard(who==='host'?authGame.lastClash.host:authGame.lastClash.guest), opp:cloneCard(who==='host'?authGame.lastClash.guest:authGame.lastClash.host), result:authGame.lastClash.result, fieldEvent: authGame.lastClash.fieldEvent, battleDetails: authGame.lastClash.battleDetails ? (who==='host' ? authGame.lastClash.battleDetails : (()=>{const d=JSON.parse(JSON.stringify(authGame.lastClash.battleDetails)); if(d.type==='monsterClash'){[d.hostPower,d.guestPower]=[d.guestPower,d.hostPower]; d.winner=d.winner==='host'?'guest':d.winner==='guest'?'host':'draw';} [d.hostEffects,d.guestEffects]=[d.guestEffects,d.hostEffects]; return d;})()) : null} : null, logs:[...authGame.logs] };
+  }
+  function broadcastState(){ if(!authGame) return; viewGame=publicStateFor('host'); mySubmitted=!!viewGame.mySubmitted; if(gameMode==='online') send({type:'state',state:publicStateFor('guest')}); renderBattle(); }
+
+  function stopLocalTimer(){ if(timerInterval){ clearInterval(timerInterval); timerInterval=null; } }
+  function startLocalTimer(){ stopLocalTimer(); timerInterval=setInterval(updateTimer,200); updateTimer(); }
+  function updateDrawCountdown(){
+    const active=!!viewGame && !viewGame.over && viewGame.phase==='draw' && !mySubmitted && !earlyFinished;
+    $('drawCountdown').hidden=!active;
+    if(!active)return;
+    const sec=Math.ceil(Math.max(0,(viewGame.deadline||gameNow())-gameNow())/1000);
+    $('drawSeconds').textContent=sec+'秒';
+    $('drawCountdown').classList.toggle('danger',sec<=10);
+    $('drawCountdownLabel').textContent=sec<=10?'あと少し！':'残り時間';
+  }
+  function updateTimer(){
+    updateDrawCountdown();
+    if(!viewGame || viewGame.over || viewGame.phase !== 'draw' || !viewGame.deadline){ $('timer').textContent=(!viewGame || ['waiting','roundIntro'].includes(viewGame.phase))?'60s':'--'; $('timer').classList.remove('danger'); return; }
+    const remain=Math.max(0, viewGame.deadline - gameNow()); const sec=Math.ceil(remain/1000); $('timer').textContent=sec+'s'; $('timer').classList.toggle('danger', sec<=5);
+    if(remain<=0 && role==='host' && authGame && authGame.phase==='draw'){ authGame.phase='naming'; authGame.logs.unshift('★ 描画時間終了。ここからはカード名を入力して提出しよう。'); authGame.announce = { text:'NAME IT', cls:'event' }; broadcastState(); }
+  }
+
+  function roundOutcomeForMe(clash){
+    if(!clash || !clash.result) return 'draw';
+    const r=clash.result;
+    if(r.includes('引き分け')) return 'draw';
+    const hostWon=r.includes('ホストがラウンド勝利');
+    const guestWon=r.includes('ゲストがラウンド勝利');
+    const iAmHost=(gameMode==='cpu'||role==='host');
+    if((hostWon&&iAmHost)||(guestWon&&role==='guest')) return 'win';
+    if(hostWon||guestWon) return 'lose';
+    return 'draw';
+  }
+
+  function showFx(text,type='draw'){
+    const o=$('fxOverlay'), t=$('fxText');
+    o.classList.remove('godEvent');
+    t.textContent=text; t.className='fxText '+type;
+    o.classList.add('show');
+    setTimeout(()=>o.classList.remove('show'),900);
+  }
+  function showGodEvent(ev){
+    if(!ev) return;
+    const o=$('fxOverlay'), t=$('fxText');
+    o.classList.add('godEvent');
+    t.textContent='DIVINE EVENT\n'+ev.name;
+    t.className='fxText god';
+    o.classList.add('show');
+    sfx('support');
+    setTimeout(()=>{ o.classList.remove('show'); setTimeout(()=>o.classList.remove('godEvent'),220); },2200);
+  }
+  function showAttributeAttack(element='neutral', from='left', damage=0){
+    const fx=$('attributeAttackFx');
+    const label=$('attributeAttackLabel');
+    if(!fx||!label) return;
+    const normalized=(element==='dark'?'shadow':element)||'neutral';
+    const names={fire:'炎獄撃',water:'蒼流撃',thunder:'雷神撃',wind:'裂空撃',earth:'地砕撃',light:'神光撃',shadow:'冥界撃',neutral:'神撃'};
+    fx.className=`attributeAttackFx ${normalized} ${from==='right'?'from-right':'from-left'}`;
+    label.textContent=`${names[normalized]||'神撃'}${damage>0?'  -'+damage:''}`;
+    fx.querySelectorAll('.particle').forEach(n=>n.remove());
+    const particleCount=normalized==='light'?18:normalized==='wind'?12:22;
+    for(let i=0;i<particleCount;i++){
+      const p=document.createElement('i');
+      p.className='particle';
+      const startLeft=from==='right' ? 76 : 24;
+      p.style.left=startLeft+'%'; p.style.top=(44+Math.random()*14)+'%';
+      const dir=from==='right'?-1:1;
+      p.style.setProperty('--dx',(dir*(120+Math.random()*420))+'px');
+      p.style.setProperty('--dy',((-150+Math.random()*300))+'px');
+      p.style.animationDelay=(Math.random()*.28)+'s';
+      if(normalized==='fire') p.style.background=randPick(['#ff3b00','#ff9800','#ffe36a']);
+      else if(normalized==='water') p.style.background=randPick(['#11aaff','#64e9ff','#e9ffff']);
+      else if(normalized==='wind') p.style.background=randPick(['#8fffd9','#eafff8']);
+      else if(normalized==='earth') {p.style.background=randPick(['#6d3e1d','#b87832','#efd078']);p.style.borderRadius='2px';}
+      else if(normalized==='light') p.style.background=randPick(['#fff','#fff3a0','#ffd84a']);
+      else if(normalized==='shadow') p.style.background=randPick(['#1b002b','#7600ac','#d06cff']);
+      else if(normalized==='thunder') p.style.background=randPick(['#fff','#fff344','#e3ff7a']);
+      else p.style.background='#dbe6ff';
+      fx.appendChild(p);
+    }
+    fx.classList.add('show');
+    battleFlash();
+    sfx(normalized==='light'?'win':'clash');
+    setTimeout(()=>fx.classList.remove('show'),2100);
+    setTimeout(()=>{fx.className='attributeAttackFx';fx.querySelectorAll('.particle').forEach(n=>n.remove());},2350);
+  }
+
+  function battleFlash(){ document.body.classList.remove('shake','flash'); void document.body.offsetWidth; document.body.classList.add('shake','flash'); setTimeout(()=>document.body.classList.remove('shake','flash'),500); }
+
+
+  function cpuArt(type, seed=0){
+    const cfg = type==='support' ? ['#7a4c88','#e0a6f2','✦'] : ['#8a5b2b','#ffd36e','⚔'];
+    const [c1,c2,icon]=cfg;
+    const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><defs><linearGradient id='g' x1='0' x2='1' y1='0' y2='1'><stop stop-color='${c1}'/><stop offset='1' stop-color='${c2}'/></linearGradient></defs><rect width='320' height='320' fill='white'/><circle cx='160' cy='150' r='110' fill='url(#g)' opacity='.30'/><path d='M70 ${95+seed*4} Q160 ${30+seed*3} 250 ${95+seed*4} Q230 245 160 225 Q90 245 70 ${95+seed*4}Z' fill='url(#g)' opacity='.9'/><text x='160' y='185' font-size='88' text-anchor='middle'>${icon}</text></svg>`;
+    return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+  }
+  function makeCpuCard(){
+    const cpu = authGame.guest;
+    const canSupport = cpu.supportUsed < SUPPORT_LIMIT;
+    const useSupport = canSupport && Math.random() < 0.28;
+    if(useSupport){
+      const types=['boost','barrier','heal','curse','focus','chaos'];
+      const role=types[Math.floor(Math.random()*types.length)];
+      const score=35+Math.floor(Math.random()*56);
+      const power=Math.max(4,Math.floor(score/10)+3);
+      const names={boost:'戦神の号令',barrier:'鋼鉄結界',heal:'天使の薬',curse:'黒呪の札',focus:'必中の眼',chaos:'神の悪戯'};
+      const name=names[role];
+      const desc=describeCard({kind:'support',role});
+      return {kind:'support',name,score,role,rarity:score>=75?'EPIC':score>=55?'RARE':'COMMON',power,nameInfo:analyzeName(name,'support'),image:cpuArt('support',authGame.round),desc};
+    }
+    const roles=['attack','defend','heal','chaos'];
+    let mrole=roles[Math.floor(Math.random()*roles.length)];
+    if(cpu.wins<authGame.host.wins && Math.random()<0.55) mrole='heal';
+    const score=40+Math.floor(Math.random()*51);
+    const power=Math.max(1,Math.ceil(score/10));
+    const names={attack:'紅蓮獣バルガ',defend:'城塞亀グラン',heal:'聖樹獣ミリア',chaos:'虚無魔獣ノクス'};
+    const name=names[mrole];
+    let atk=Math.max(3,power+(mrole==='attack'?5:mrole==='chaos'?3:mrole==='defend'?2:1));
+    let shield=Math.max(0,Math.floor(power/2)+(mrole==='defend'?6:mrole==='chaos'?2:1));
+    if(score>=80) atk+=3;
+    const desc=describeCard({kind:'monster'});
+    return {kind:'monster',name,score,role:mrole,rarity:score>=75?'EPIC':score>=55?'RARE':'COMMON',stats:{atk,shield},nameInfo:analyzeName(name,'monster'),image:cpuArt('monster',authGame.round),desc};
+  }
+  function startCpuGame(){
+    cleanupPeer(); gameMode='cpu'; role='host'; remoteReady=true; scheduledStart=null;
+    lastFxKey=''; lastGodEventKey=''; aiVisual=null; aiRoundToken=''; authGame={round:1,phase:'waiting',startAt:null,over:false,deadline:null,fieldEvent:chooseEvent(),host:newSide('あなた'),guest:newSide('CPU'),logs:['★ CPU対戦準備完了。GAME STARTで開始。'],lastClash:null,winner:null,announce:null}; if(authGame.fieldEvent.id!=='calm') authGame.logs.unshift(`★ 神イベント発生：「${authGame.fieldEvent.name}」 ${authGame.fieldEvent.desc}`);
+    viewGame=publicStateFor('host'); mySubmitted=false; earlyFinished=false; clearCanvas(); setSelectedType('monster');
+    $('cpuStartBtn').disabled=true; $('cpuStopBtn').disabled=false; setStatus('CPU対戦中','ready'); setBgmMood('draw'); renderBattle();
+  }
+  function stopCpuGame(){
+    if(gameMode!=='cpu') return;
+    gameMode='none'; role=null; remoteReady=false; scheduledStart=null; authGame=null; viewGame=null; mySubmitted=false; earlyFinished=false; stopLocalTimer(); clearCanvas(); setSelectedType('monster');
+    $('cpuStartBtn').disabled=false; $('cpuStopBtn').disabled=true; setStatus('未接続','wait'); renderBattle();
+  }
+  function cpuPlayerSubmit(card){
+    if(gameMode!=='cpu' || !authGame || authGame.over || !['draw','naming'].includes(authGame.phase)) return;
+    hostSubmit('host',card);
+    if(!authGame || authGame.over) return;
+    if(['draw','naming'].includes(authGame.phase) && !authGame.guest.submitted){
+      const cpuCard=makeCpuCard(), cpuGame=authGame, cpuRound=authGame.round;
+      setTimeout(()=>{ if(gameMode==='cpu' && authGame===cpuGame && authGame.round===cpuRound && ['draw','naming'].includes(authGame.phase) && !authGame.guest.submitted) hostSubmit('guest',cpuCard); },350);
+    }
+  }
+  $('cpuStartBtn').onclick=startCpuGame;
+  $('cpuStopBtn').onclick=stopCpuGame;
+
+  $('rematchBtn').onclick = () => { if(gameMode==='cpu') startCpuGame(); else if(role==='host') startHostGame(); else send({type:'rematch'}); };
+
+  function setInputLocks(){
+    updateDrawCountdown();
+    const draw = drawingAllowed();
+    const naming = namingAllowed();
+    $('canvasWrap').classList.toggle('locked', !draw);
+    $('cardName').disabled = !naming;
+    $('submitBtn').disabled = !canSubmit();
+    $('submitBtn').hidden = !!viewGame?.my?.hasSurvivor;
+    $('finishDrawingBtn').disabled = !draw;
+    $('clearBtn').disabled = !draw; if($('bucketBtn')) $('bucketBtn').disabled = !draw; updateUndoButton();
+    $('monsterTypeBtn').disabled = !(draw || naming);
+    $('supportTypeBtn').disabled = !(draw || naming) || !canChooseSupport();
+  }
+  function updateUI(ph,ps,eh,es,pw=0,ew=0){ if($('pShield'))$('pShield').textContent=ps; if($('eShield'))$('eShield').textContent=es; if($('pWins'))$('pWins').textContent=pw; if($('eWins'))$('eWins').textContent=ew; if($('pState'))$('pState').textContent=ps?'🛡'+ps:''; if($('eState'))$('eState').textContent=es?'🛡'+es:''; }
+
+  function renderBattleEffects(details){
+    const box=$('battleEffects');
+    box.innerHTML='';
+    if(!details) return;
+    if(details.type==='monsterClash'){
+      const duel=document.createElement('div');
+      duel.className='powerDuel';
+      duel.innerHTML=`<div class="powerSide"><div class="powerLabel">YOUR BATTLE POWER</div><div class="powerNum">${details.hostPower}</div></div><div class="powerVs">−</div><div class="powerSide"><div class="powerLabel">OPPONENT BATTLE POWER</div><div class="powerNum">${details.guestPower}</div></div>`;
+      box.appendChild(duel);
+    }
+    const all=[...(details.hostEffects||[]).map(x=>({...x,text:'自分: '+x.text})),...(details.guestEffects||[]).map(x=>({...x,text:'相手: '+x.text}))];
+    all.forEach((e,i)=>{const row=document.createElement('div');row.className='effectRow '+(e.kind||'');row.style.animationDelay=(i*70)+'ms';row.innerHTML=`<span class="fxIcon">${e.icon||'✦'}</span><span>${escapeHTML(e.text)}</span>`;box.appendChild(row);});
+    if(details.type==='monsterClash'){
+      const result=document.createElement('div');result.className='effectRow '+(details.winner==='draw'?'attr':details.winner==='host'?'good':'bad');
+      result.innerHTML=`<span class="fxIcon">${details.winner==='draw'?'⚖️':details.winner==='host'?'🏆':'💀'}</span><span>${details.winner==='draw'?'戦闘力が同じ。DRAW、勝利数加算なし。':`戦闘力差 ${details.diff}。勝者に1勝！`}</span>`;
+      box.appendChild(result);
+    }
+  }
+
+  function renderBattle(){
+    renderGameStart();
+    if(viewGame?.phase==='roundIntro') scheduleOpening();
+    if(!viewGame){
+      document.querySelector('.arenaPanel')?.classList.remove('matchActive');
+      updateUI(100,0,100,0); $('roundNo').textContent='1'; $('phaseLabel').textContent='接続待ち'; $('submitState').textContent='まずオンライン接続してください。'; $('mySupportLeft').textContent=String(SUPPORT_LIMIT); $('oppSupportLeft').textContent=String(SUPPORT_LIMIT); $('fieldEventLabel').textContent='接続待ち'; $('myCardSlot').className='hiddenCard'; $('myCardSlot').innerHTML='あなたのカード<br>まだ未提出'; $('oppCardSlot').className='hiddenCard'; $('oppCardSlot').innerHTML='相手のカード<br>まだ未提出'; $('rematchBtn').disabled=true; $('battleBanner').className='banner'; $('battleReadyRow').className='battleReadyRow'; $('battleReadyStatus').textContent=''; $('battleEffects').innerHTML=''; $('log').innerHTML='<div class="logline">接続後、ホストのGAME STARTで開始。</div>'; stopLocalTimer(); setSelectedType('monster'); setInputLocks(); refreshPreview(); updateTimer(); return;
+    }
+    document.querySelector('.arenaPanel')?.classList.add('matchActive');
+    if(localRoundSeen !== `${viewGame.startAt}:${viewGame.round}`){
+      localRoundSeen = `${viewGame.startAt}:${viewGame.round}`;
+      // 新ラウンドではローカルの作画状態も必ず同期し直す。
+      // 特に敗者（survivorなし）は、前ラウンドの submitted / earlyFinished / AI 状態が
+      // ブラウザ側に残って描画不能になることがないよう強制リセットする。
+      earlyFinished = false;
+      clearCanvas();
+      if(!viewGame.my.hasSurvivor){
+        mySubmitted = false;
+        aiVisual = null;
+        aiRoundToken = '';
+        aiAnalyzing = false;
+        if($('cardName')) $('cardName').value = '';
+        setSelectedType('monster');
+      }
+      setTimeout(()=>{ const grid=document.querySelector('.grid'); if(grid) grid.scrollIntoView({behavior:'smooth',block:'start'}); },140);
+    }
+    // 提出状態はホストの確定値を使う。新規提出もsurvivorも同じ扱い。
+    mySubmitted = !!viewGame.mySubmitted;
+    if(viewGame.announce && viewGame.announceToken !== lastAnnounceToken){ lastAnnounceToken = viewGame.announceToken; announce(viewGame.announce.text, viewGame.announce.cls || 'event'); }
+    const godKey = viewGame.round+'-'+(viewGame.fieldEvent?.id || viewGame.fieldEvent?.name || 'none');
+    if(viewGame.phase==='draw' && viewGame.fieldEvent && viewGame.fieldEvent.id!=='calm' && godKey !== lastGodEventKey){
+      lastGodEventKey = godKey;
+      setTimeout(()=>{ if(viewGame && viewGame.round+'-'+(viewGame.fieldEvent?.id || viewGame.fieldEvent?.name || 'none')===godKey) showGodEvent(viewGame.fieldEvent); },950);
+    }
+    updateUI(0,viewGame.my.shield,0,viewGame.opp.shield,viewGame.my.wins||0,viewGame.opp.wins||0);
+    for(const [id,side] of [['pState',viewGame.my],['eState',viewGame.opp]]){
+      if($(id))$(id).textContent='次戦：強化 +'+(side.nextBoost||0)+' / 防御 +'+(side.shield||0)+' / 弱体 -'+(side.nextWeaken||0);
+    }
+    $('mySupportLeft').textContent=String(SUPPORT_LIMIT - viewGame.my.supportUsed); $('oppSupportLeft').textContent=String(SUPPORT_LIMIT - viewGame.opp.supportUsed);
+    $('fieldEventLabel').textContent = viewGame.fieldEvent && viewGame.fieldEvent.id!=='calm' ? `${viewGame.fieldEvent.name} — ${viewGame.fieldEvent.desc}` : '神イベントなし';
+    if(selectedType==='support' && !canChooseSupport()) setSelectedType('monster'); else setSelectedType(selectedType);
+    $('roundNo').textContent=String(viewGame.round); $('rematchBtn').disabled=!viewGame.over;
+
+    if(viewGame.phase==='waiting'){ setBgmMood('idle'); $('phaseLabel').textContent='開始待ち'; $('submitState').textContent=gameMode==='cpu'?'GAME STARTを押すとROUND 1が始まります。':role==='guest'?'ホストのGAME STARTを待っています。':'接続同期後、GAME STARTで開始できます。'; $('battleBanner').className='banner'; stopLocalTimer(); updateTimer(); }
+    else if(viewGame.phase==='roundIntro'){ setBgmMood('idle'); $('phaseLabel').textContent='開始準備'; $('submitState').textContent='ROUND 1開始準備中…'; $('battleBanner').textContent='ROUND 1'; $('battleBanner').className='banner show'; stopLocalTimer(); updateTimer(); }
+    else if(viewGame.over){ setBgmMood('over'); $('phaseLabel').textContent='ゲーム終了'; $('submitState').textContent='ゲーム終了。再戦できます。'; $('battleBanner').textContent=viewGame.winner; $('battleBanner').className='banner show'; stopLocalTimer(); updateTimer(); }
+    else if(viewGame.phase==='draw'){ if(earlyFinished || viewGame.mySubmitted){ setBgmMood('idle'); $('phaseLabel').textContent=viewGame.mySubmitted?'相手待ち':'名付け・提出'; $('submitState').textContent=viewGame.mySubmitted?'提出済み。自分のカードステータスを確認できます。相手は残り時間まで描けます。':'描画確定済み。カード名を付けて提出しよう。'; } else { setBgmMood('draw'); $('phaseLabel').textContent='お絵描き'; $('submitState').textContent='60秒で1枚の絵を描こう。描き終わったら時間内でも名付けへ進めます。'; } $('battleBanner').className='banner'; startLocalTimer(); }
+    else if(viewGame.phase==='naming'){ setBgmMood('idle'); setTimeout(ensureAiAnalysis,0); $('phaseLabel').textContent='名付け・提出'; $('submitState').textContent=viewGame.mySubmitted?'提出済み。自分のカードステータスを確認しながら相手を待てます。':'カード名を入力して提出しよう。'; $('battleBanner').className='banner'; stopLocalTimer(); $('timer').textContent='0s'; $('timer').classList.add('danger'); }
+    else if(viewGame.phase==='reveal'){ setBgmMood('idle'); $('phaseLabel').textContent='カード鑑賞'; $('submitState').textContent='両者のカード公開！ 時間制限なし。イラスト・名前・ステータスをじっくり見て、準備ができたらBATTLE READY。'; $('battleBanner').textContent='CARD REVEAL — LOOK & REACT!'; $('battleBanner').className='banner show'; stopLocalTimer(); } else if(viewGame.phase==='standby'){ setBgmMood('idle'); $('phaseLabel').textContent='スタンバイ'; $('submitState').textContent='STANDBY... まもなくバトル開始。'; $('battleBanner').textContent='STANDBY...'; $('battleBanner').className='banner show'; stopLocalTimer(); } else if(viewGame.phase==='battleIntro'){ setBgmMood('battle'); $('phaseLabel').textContent='バトル開始'; $('submitState').textContent='BATTLE!!'; $('battleBanner').textContent='BATTLE!!'; $('battleBanner').className='banner show'; stopLocalTimer(); } else if(viewGame.phase==='roundEnd'){ setBgmMood('idle'); $('phaseLabel').textContent='結果確認'; const outcome=roundOutcomeForMe(viewGame.lastClash); $('submitState').textContent=outcome==='win'?'このラウンドはあなたの勝ち！ 勝利数が1つ加算されます。':outcome==='lose'?'このラウンドはあなたの負け。次のラウンドで取り返そう。':'このラウンドは引き分け。勝利数は加算されません。'; $('battleBanner').textContent=outcome==='win'?`WIN!  ROUND ${viewGame.round}`:outcome==='lose'?`LOST!  ROUND ${viewGame.round}`:`DRAW!  ROUND ${viewGame.round}`; $('battleBanner').className='banner show '+(outcome==='win'?'resultWin':outcome==='lose'?'resultLose':'resultDraw'); stopLocalTimer(); } else if(viewGame.phase==='cardVanish'){ setBgmMood('idle'); $('phaseLabel').textContent='カード消滅'; $('submitState').textContent='敗北したモンスターと使用済みサポートだけが消滅します。勝ったモンスターは盤面に残って次ラウンドへ続投します。'; $('battleBanner').textContent='DEFEATED CARD DESTROYED → NEXT ROUND'; $('battleBanner').className='banner show'; stopLocalTimer(); } else { setBgmMood('battle'); $('phaseLabel').textContent='判定中'; $('submitState').textContent='両者提出済み。判定中…'; $('battleBanner').className='banner'; stopLocalTimer(); }
+
+    if(viewGame.my.hasSurvivor && ['draw','naming'].includes(viewGame.phase)){
+      $('phaseLabel').textContent='続投・相手待ち';
+      $('submitState').textContent='前ラウンド勝者：このカードで続投（自動提出済み）。相手の新しいカードを待っています。';
+    }
+    if(viewGame.phase==='reveal'){
+      $('battleReadyRow').className='battleReadyRow show';
+      $('battleReadyBtn').disabled=!!viewGame.myBattleReady;
+      $('battleReadyBtn').textContent=viewGame.myBattleReady?'READY ✓':'BATTLE READY';
+      if(viewGame.myBattleReady && viewGame.oppBattleReady) $('battleReadyStatus').textContent='両者READY — STANDBYへ';
+      else if(viewGame.myBattleReady) $('battleReadyStatus').textContent='あなたはREADY。相手の準備待ち…';
+      else if(viewGame.oppBattleReady) $('battleReadyStatus').textContent='相手はREADY。好きなだけカードを見てから開始できます。';
+      else $('battleReadyStatus').textContent='両プレイヤーがREADYを押すとバトル開始';
+    }else{
+      $('battleReadyRow').className='battleReadyRow';
+      $('battleReadyStatus').textContent='';
+    }
+
+    setInputLocks();
+    const myDisplay = viewGame.mySubmitted && viewGame.myCard ? viewGame.myCard : (viewGame.lastClash ? viewGame.lastClash.me : null);
+    const oppDisplay = viewGame.oppCard || (viewGame.lastClash ? viewGame.lastClash.opp : null);
+    if(myDisplay){ $('myCardSlot').className=''; $('myCardSlot').innerHTML=cardHTML(myDisplay); } else { $('myCardSlot').className='hiddenCard'; $('myCardSlot').innerHTML='あなたのカード<br>まだ未提出'; }
+    if(oppDisplay){ $('oppCardSlot').className=''; $('oppCardSlot').innerHTML=cardHTML(oppDisplay); } else { $('oppCardSlot').className='hiddenCard'; $('oppCardSlot').innerHTML=viewGame.oppSubmitted?'相手は提出済み<br>公開は同時！':'相手のカード<br>まだ未提出'; }
+    if(['reveal','standby','battleIntro'].includes(viewGame.phase)){ const a=$('myCardSlot').querySelector('.card'); const b=$('oppCardSlot').querySelector('.card'); if(a)a.classList.add('showcaseCard'); if(b)b.classList.add('showcaseCard'); }
+    if(viewGame.phase==='cardVanish'){
+      const myCardEl=$('myCardSlot').querySelector('.card'); if(myCardEl) myCardEl.classList.add('cardVanish');
+      const oppCardEl=$('oppCardSlot').querySelector('.card'); if(oppCardEl) oppCardEl.classList.add('cardVanish');
+    }
+
+    renderBattleEffects(viewGame.lastClash ? viewGame.lastClash.battleDetails : null);
+
+    if(viewGame.lastClash){
+      const key=viewGame.lastClash.round+'-'+viewGame.lastClash.result;
+      if(key!==lastFxKey){
+        lastFxKey=key;
+        const bd=viewGame.lastClash.battleDetails;
+        const outcome=roundOutcomeForMe(viewGame.lastClash);
+        if(bd&&bd.type==='monsterClash'&&bd.winner!=='draw'){
+          const winnerIsMe=outcome==='win';
+          const winnerCard=winnerIsMe?viewGame.lastClash.me:viewGame.lastClash.opp;
+          const fxKey=`${viewGame.lastClash.round}-${winnerCard?.element||'neutral'}-${winnerIsMe?'me':'opp'}`;
+          if(fxKey!==lastAttributeAttackKey){
+            lastAttributeAttackKey=fxKey;
+            showAttributeAttack(winnerCard?.element||'neutral',winnerIsMe?'left':'right',bd.finalDamage||0);
+          }
+        } else {
+          battleFlash();
+        }
+        setTimeout(()=>{
+          showFx(outcome==='win'?'WIN!':outcome==='lose'?'LOST!':'DRAW!',outcome==='win'?'win':outcome==='lose'?'lose':'draw');
+          sfx(outcome==='win'?'win':outcome==='lose'?'lose':'round');
+        }, bd&&bd.type==='monsterClash'&&bd.winner!=='draw' ? 720 : 120);
+      }
+    }
+    if(viewGame.over){ const myWin=(role==='host'&&viewGame.winner.includes('ホスト'))||(role==='guest'&&viewGame.winner.includes('ゲスト'))||(gameMode==='cpu'&&viewGame.winner.includes('ホスト')); const endKey='audio-end-'+viewGame.winner; if(lastFxKey!==endKey){lastFxKey=endKey;sfx(viewGame.winner.includes('引き分け')?'round':myWin?'win':'lose');} showFx(viewGame.winner.includes('引き分け')?'DRAW':myWin?'VICTORY!':'DEFEAT…',viewGame.winner.includes('引き分け')?'draw':myWin?'win':'lose'); }
+    $('log').innerHTML=''; viewGame.logs.forEach(text=>{const d=document.createElement('div');d.className='logline';d.textContent=text;$('log').appendChild(d);});
+    refreshPreview();
+  }
+
+
+  if($('aiRetryBtn')) $('aiRetryBtn').onclick=()=>preloadAi(true);
+
+  // Title menu navigation
+  function enterGame(){ $('titleMenu').classList.add('hidden'); $('backTitleBtn').classList.add('show'); window.scrollTo({top:0,behavior:'smooth'}); }
+  function returnToTitle(){ $('titleMenu').classList.remove('hidden'); $('backTitleBtn').classList.remove('show'); window.scrollTo({top:0,behavior:'smooth'}); }
+  $('menuCpuBtn').onclick=()=>{if(!bgmEnabled)setBgmEnabled(true);enterGame();preloadAi(false);setTimeout(()=>{if(typeof startCpuGame==='function')startCpuGame();},80);};
+  $('menuOnlineBtn').onclick=()=>{if(!bgmEnabled)setBgmEnabled(true);enterGame();preloadAi(false);setTimeout(()=>{const gate=document.querySelector('.arenaPanel');if(gate)gate.scrollIntoView({behavior:'smooth',block:'start'});},120);};
+  $('menuRulesBtn').onclick=()=>$('rulesModal').classList.add('show');
+  $('menuGalleryBtn').onclick=openGallery;
+  $('galleryCloseBtn').onclick=closeGallery;
+  $('galleryModal').addEventListener('click',e=>{if(e.target===$('galleryModal'))closeGallery();});
+  $('galleryDetailCloseBtn').onclick=closeGalleryDetail;
+  $('galleryDetail').addEventListener('click',e=>{if(e.target===$('galleryDetail'))closeGalleryDetail();});
+  $('galleryFavoriteBtn').onclick=()=>toggleGalleryFavorite(galleryDetailId);
+  $('galleryClearBtn').onclick=()=>{
+    const list=loadGallery();
+    if(!list.some(entry=>entry.favorite!==true))return;
+    if(confirm('お気に入り以外のカードを削除しますか？ ★お気に入りは残ります。')){
+      if(persistGallery(list.filter(entry=>entry.favorite===true))){renderGallery();closeGalleryDetail();}
+    }
+  };
+  $('rulesCloseBtn').onclick=()=>$('rulesModal').classList.remove('show');
+  $('rulesModal').addEventListener('click',e=>{if(e.target===$('rulesModal'))$('rulesModal').classList.remove('show');});
+  $('menuBgmBtn').onclick=()=>{if(typeof setBgmEnabled==='function')setBgmEnabled(!bgmEnabled);};
+  $('backTitleBtn').onclick=returnToTitle;
+  renderBattle();
+})();
+</script>
+</body>
+</html>
