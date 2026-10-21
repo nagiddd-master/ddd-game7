@@ -60,14 +60,9 @@ h1{margin:0 0 4px;font-size:30px}.sub{color:var(--muted);margin-bottom:16px;line
 .battleReadyRow{display:none;justify-content:center;gap:10px;margin:14px 0 4px}.battleReadyRow.show{display:flex}.battleReadyBtn{min-width:260px;padding:15px 22px;border-radius:16px;border:1px solid rgba(255,220,126,.45);background:linear-gradient(180deg,#6a4d20,#30210e);color:#fff0b1;font-weight:1000;letter-spacing:.12em;font-size:16px;box-shadow:0 0 26px rgba(255,203,75,.12),inset 0 1px rgba(255,255,255,.12);cursor:pointer;transition:.18s}.battleReadyBtn:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.1)}.battleReadyBtn:disabled{opacity:.55;cursor:not-allowed}.battleReadyStatus{text-align:center;color:#c9bddf;font-size:12px;margin-top:7px;letter-spacing:.04em}
 
 /* ===== CARD GALLERY ===== */
-.galleryFavorite{display:block;width:100%;margin-top:8px;padding:9px;border-radius:10px;border:1px solid #716345;background:#161b29;color:#e1e5ed;cursor:pointer;font-weight:700}
-.galleryFavorite[aria-pressed="true"]{color:#ffe184;border-color:#e5bc54;background:#39301a}
-.galleryFavorite:focus-visible{outline:3px solid #ffe184;outline-offset:2px}
-.galleryDetailActions{flex-wrap:wrap}
-
 .galleryModal{position:fixed;inset:0;z-index:5200;display:none;place-items:center;padding:20px;background:rgba(5,6,11,.84);backdrop-filter:blur(10px)}
 .galleryModal.show{display:grid}.galleryCard{width:min(1100px,100%);max-height:86vh;overflow:auto;border:1px solid rgba(255,220,126,.3);border-radius:26px;padding:22px;background:linear-gradient(180deg,#171525,#0b0e17);box-shadow:0 30px 90px rgba(0,0,0,.62)}
-.galleryHead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}.galleryHead h2{margin:0;font-family:Georgia,serif;color:#ffe69a}.galleryGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}.galleryItem{cursor:pointer;min-width:0}.galleryItem .card{min-height:0;height:auto}.galleryMeta{padding:7px 3px 0;color:#9fabc0;font-size:11px;line-height:1.45}.galleryEmpty{padding:42px 18px;text-align:center;color:#9ba7ba;border:1px dashed rgba(133,148,182,.25);border-radius:18px}.galleryDetail{position:fixed;inset:0;z-index:5300;display:none;place-items:center;padding:20px;background:rgba(4,5,10,.88);backdrop-filter:blur(12px)}.galleryDetail.show{display:grid}.galleryDetailInner{width:min(520px,100%);max-height:88vh;overflow:auto}.galleryDetailActions{display:flex;justify-content:center;gap:10px;margin-top:12px}.menuBtn.galleryMenu{background:linear-gradient(180deg,#24384e,#111923)}
+.galleryHead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}.galleryHead h2{margin:0;font-family:Georgia,serif;color:#ffe69a}.galleryGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}.galleryItem{cursor:pointer;min-width:0}.galleryItem .card{min-height:0;height:100%}.galleryMeta{padding:7px 3px 0;color:#9fabc0;font-size:11px;line-height:1.45}.galleryEmpty{padding:42px 18px;text-align:center;color:#9ba7ba;border:1px dashed rgba(133,148,182,.25);border-radius:18px}.galleryDetail{position:fixed;inset:0;z-index:5300;display:none;place-items:center;padding:20px;background:rgba(4,5,10,.88);backdrop-filter:blur(12px)}.galleryDetail.show{display:grid}.galleryDetailInner{width:min(520px,100%);max-height:88vh;overflow:auto}.galleryDetailActions{display:flex;justify-content:center;gap:10px;margin-top:12px}.menuBtn.galleryMenu{background:linear-gradient(180deg,#24384e,#111923)}
 @media(max-width:620px){.galleryGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.galleryCard{padding:14px}.galleryItem .title{font-size:14px}.galleryItem .desc{font-size:10px}}
 
 /* ===== ATTRIBUTE FINISH ATTACKS ===== */
@@ -116,6 +111,24 @@ h1{margin:0 0 4px;font-size:30px}.sub{color:var(--muted);margin-bottom:16px;line
 @keyframes particleFly{0%{opacity:0;transform:translate(0,0) scale(.4)}18%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(0)}}
 @media (prefers-reduced-motion:reduce){.attributeAttackFx .attackCore,.attributeAttackFx .trail,.attributeAttackFx .impact,.attributeAttackFx .attackLabel,.attributeAttackFx .particle{animation-duration:.2s!important}}
 
+/* ===== REALTIME CINEMATIC FX (Canvas particles + GPU accelerated CSS 3D) ===== */
+#cinematicFxCanvas{position:fixed;inset:0;width:100vw;height:100dvh;z-index:9996;pointer-events:none;mix-blend-mode:screen;opacity:0;transition:opacity .12s ease}
+#cinematicFxCanvas.active{opacity:1}
+.cinematicVignette{position:fixed;inset:0;z-index:9995;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 50%,transparent 24%,rgba(0,0,0,.18) 55%,rgba(0,0,0,.72) 100%);transition:opacity .18s ease}
+.cinematicVignette.active{opacity:1;animation:cinematicVignettePulse 1.8s ease both}
+.battleZone.cinematicCharge{perspective:1200px;animation:cinematicZoneCharge 1.1s cubic-bezier(.2,.8,.2,1) both}
+.battleZone.cinematicImpact{animation:cinematicZoneImpact .46s cubic-bezier(.2,.85,.25,1) both}
+.battleZone.cinematicImpact .clash{filter:saturate(1.35) contrast(1.08)}
+.clash .card{transform-style:preserve-3d;backface-visibility:hidden;will-change:transform,filter}
+.clash .card.fxWinner{animation:fxWinnerCard 1.35s cubic-bezier(.2,.85,.22,1) both}
+.clash .card.fxLoser{animation:fxLoserCard 1.15s cubic-bezier(.2,.75,.2,1) .28s both}
+@keyframes cinematicZoneCharge{0%{transform:scale(1);filter:brightness(1)}45%{transform:scale(1.015);filter:brightness(.78) saturate(1.1)}100%{transform:scale(1);filter:brightness(1)}}
+@keyframes cinematicZoneImpact{0%{transform:translate3d(0,0,0) scale(1)}18%{transform:translate3d(-8px,3px,0) scale(1.018)}36%{transform:translate3d(7px,-4px,0) scale(1.008)}58%{transform:translate3d(-4px,2px,0) scale(1.012)}100%{transform:none}}
+@keyframes fxWinnerCard{0%{transform:translateZ(0) scale(1);filter:brightness(1)}35%{transform:translateZ(70px) scale(1.055) rotateX(-2deg);filter:brightness(1.25) saturate(1.25);box-shadow:0 0 55px rgba(255,220,115,.45)}100%{transform:none;filter:none}}
+@keyframes fxLoserCard{0%{transform:translateZ(0);filter:none}42%{transform:translateZ(-50px) scale(.96) rotateZ(-1.2deg);filter:brightness(1.65) saturate(.75)}100%{transform:none;filter:none}}
+@keyframes cinematicVignettePulse{0%{opacity:0}18%{opacity:1}72%{opacity:.88}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){#cinematicFxCanvas{display:none}.cinematicVignette{display:none}.battleZone.cinematicCharge,.battleZone.cinematicImpact,.clash .card.fxWinner,.clash .card.fxLoser{animation-duration:.18s!important}}
+
 
 /* Active-match layout: keep the battle board at the top of the right column. */
 .arenaPanel.matchActive{display:flex;flex-direction:column}
@@ -134,6 +147,15 @@ body.canvasZoomMode::before{z-index:5998}
 .canvasWrap.zoomed canvas{width:auto!important;height:auto!important;max-width:100%!important;max-height:100%!important;aspect-ratio:1/1;box-shadow:0 0 0 1px rgba(255,255,255,.9),0 0 60px rgba(255,209,96,.12)!important}
 .canvasWrap.zoomed .canvasZoomClose{display:block;position:absolute;right:18px;top:15px;z-index:3;border:1px solid rgba(255,225,153,.32);border-radius:999px;padding:8px 12px;background:rgba(20,17,30,.88);color:#fff0b5;font-weight:900;cursor:pointer}
 .canvasWrap.zoomed .canvasZoomHint{display:block;position:absolute;left:22px;bottom:14px;color:#9e96b2;font-size:10px;letter-spacing:.08em}
+.canvasZoomTools{display:none}
+.canvasWrap.zoomed .canvasZoomTools{display:flex;position:absolute;left:18px;right:148px;top:12px;z-index:4;align-items:center;gap:9px;flex-wrap:wrap;padding:5px 8px;border:1px solid rgba(255,225,153,.18);border-radius:13px;background:rgba(10,12,20,.78);backdrop-filter:blur(8px)}
+.canvasZoomColors,.canvasZoomToolButtons,.canvasZoomBrush{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.canvasWrap.zoomed .canvasZoomTools .swatch{width:26px;height:26px;min-width:26px;border-radius:8px}
+.canvasWrap.zoomed .canvasZoomTools .btn{padding:7px 9px;font-size:11px;border-radius:9px}
+.canvasZoomBrush input[type=range]{width:100px;accent-color:#ffd36e}
+.canvasWrap.zoomed{padding-top:82px!important;padding-bottom:34px!important}
+@media(max-width:900px){.canvasWrap.zoomed .canvasZoomTools{right:12px;top:48px}.canvasWrap.zoomed{padding-top:126px!important}}
+@media(max-width:700px){.canvasWrap.zoomed .canvasZoomTools{left:8px;right:8px;top:46px;gap:5px;padding:5px}.canvasWrap.zoomed .canvasZoomTools .btn{padding:6px 7px;font-size:10px}.canvasWrap.zoomed .canvasZoomTools .swatch{width:23px;height:23px;min-width:23px}.canvasZoomBrush input[type=range]{width:82px}.canvasWrap.zoomed{padding-top:142px!important}}
 @media(max-width:700px){.canvasWrap.zoomed{inset:8px!important;width:calc(100vw - 16px)!important;height:calc(100dvh - 16px)!important;padding:52px 10px 28px!important;border-radius:18px!important}.canvasWrap.zoomed .canvasZoomClose{right:10px;top:10px}}
 
 /* ===== LARGE CARD STATS ===== */
@@ -144,18 +166,6 @@ body.canvasZoomMode::before{z-index:5998}
 .card .typeMini{font-size:16px;padding:5px 10px;letter-spacing:.025em;color:#fff0bc;border-color:rgba(255,220,128,.35);background:rgba(43,39,54,.84)}
 .card .element{font-size:14px;padding:5px 10px;font-weight:1000;color:#fff1bd;border-color:rgba(255,220,128,.34)}
 @media(max-width:620px){.card .nums{font-size:15px;gap:5px}.card .nums span{min-height:32px;padding:6px 4px}.card .typeMini{font-size:14px}.card .element{font-size:13px}}
-/* Countdown sits immediately above the canvas label. */
-.drawCountdown{position:relative;z-index:10;display:flex;align-items:center;justify-content:center;gap:12px;width:max-content;max-width:100%;margin:0 auto 22px;padding:8px 20px;border:2px solid #ffe286;border-radius:14px;background:#101522;color:#fff3bb;box-shadow:0 4px 20px #0009;pointer-events:none;font:700 14px/1.1 system-ui,sans-serif}
-.drawCountdown strong{font-size:44px;font-variant-numeric:tabular-nums;min-width:3ch;text-align:center}
-.drawCountdown.danger{border-color:#ff667d;background:#45131e;color:#fff}
-.drawCountdown[hidden]{display:none}
-.canvasWrap.zoomed{padding-top:90px!important;padding-bottom:56px!important}
-.canvasWrap.zoomed::before{display:none!important}
-.canvasWrap.zoomed .drawCountdown{position:absolute;top:12px;left:14px;margin:0;padding:6px 12px}
-.canvasWrap.zoomed .canvasZoomClose{top:auto!important;bottom:12px;right:14px}
-.timer{font-family:system-ui,sans-serif;font-size:52px}
-@media(max-width:420px){.canvasWrap.zoomed .drawCountdown{gap:6px;font-size:11px;padding:7px 9px}.canvasWrap.zoomed .drawCountdown strong{font-size:34px}.canvasWrap.zoomed .canvasZoomClose{font-size:11px;padding:8px}}
-body.canvasZoomMode .drawCountdown{position:fixed;top:max(12px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:6100;margin:0}
 </style>
 
 <style>
@@ -246,8 +256,7 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
 
 </head>
 <body>
-
-<div id="titleMenu" class="titleMenu"><div class="menuShell"><div class="menuBrand"><div class="menuLogo">DDD</div><div class="kicker">DIVINE CARD BATTLE SYSTEM</div><h1>ディバイン・デザイン・<span>デストラクション</span></h1><p>60秒で描いた一枚を神話へ。名付け、召喚し、相手を破壊せよ。</p><div class="menuFooter">VER. 1.0 · AI HYBRID JUDGEMENT · CPU / ONLINE</div></div><div class="menuButtons"><button id="menuCpuBtn" class="menuBtn primaryMenu">CPU BATTLE<small>1人でテストプレイ</small></button><button id="menuOnlineBtn" class="menuBtn onlineMenu">ONLINE BATTLE<small>ルームコードで友達と対戦</small></button><button id="menuRulesBtn" class="menuBtn">RULES<small>ゲームルールを確認</small></button><button id="menuGalleryBtn" class="menuBtn galleryMenu">CARD GALLERY<small>これまで作ったカードを鑑賞</small></button><button id="menuBgmBtn" class="menuBtn">BGM / SOUND<small>クリックでBGMをON/OFF</small></button></div></div></div><div id="rulesModal" class="rulesModal"><div class="rulesCard"><div class="row" style="justify-content:space-between"><h2>DDD RULES</h2><button id="rulesCloseBtn" class="btn secondary">閉じる</button></div><div class="rulesGrid"><div class="ruleItem"><b>勝利条件</b><br>先に5勝したプレイヤーが勝利。</div><div class="ruleItem"><b>1ラウンド</b><br>60秒で絵を1枚描く → 名付け → 提出 → カード公開後、両者READYでバトル開始。</div><div class="ruleItem"><b>モンスター</b><br>モンスター同士なら属性相性込みでバトル。</div><div class="ruleItem"><b>サポート</b><br>1試合1枚のみ。その代わり非常に強力な逆転用の切り札。劣勢時は逆転補正も入る。</div><div class="ruleItem"><b>組み合わせ</b><br>サポート使用時は効果を次のモンスター戦へ保存。DRAW扱いで両カード消滅・勝利数加算なし。</div><div class="ruleItem"><b>自動判定</b><br>絵柄＋カード名＋ブラウザ内AIで能力・属性・効果を決定。</div></div></div></div><div id="galleryModal" class="galleryModal"><div class="galleryCard"><div class="galleryHead"><div><h2>CARD GALLERY</h2><div class="small">このブラウザに保存。通常カードは最新30枚、★お気に入りは別枠で保護。星を押すと登録・解除できます。</div></div><div class="row"><button id="galleryClearBtn" class="btn danger">お気に入り以外を削除</button><button id="galleryCloseBtn" class="btn secondary">閉じる</button></div></div><div id="galleryGrid" class="galleryGrid"></div></div></div><div id="galleryDetail" class="galleryDetail"><div class="galleryDetailInner"><div id="galleryDetailCard"></div><div id="galleryDetailMeta" class="galleryMeta" style="text-align:center"></div><div class="galleryDetailActions"><button id="galleryFavoriteBtn" class="btn secondary" aria-pressed="false">☆ お気に入り</button><button id="galleryDetailCloseBtn" class="btn secondary">一覧へ戻る</button></div></div></div><button id="backTitleBtn" class="btn secondary backTitle">← TITLE</button>
+<div id="titleMenu" class="titleMenu"><div class="menuShell"><div class="menuBrand"><div class="menuLogo">DDD</div><div class="kicker">DIVINE CARD BATTLE SYSTEM</div><h1>ディバイン・デザイン・<span>デストラクション</span></h1><p>60秒で描いた一枚を神話へ。名付け、召喚し、相手を破壊せよ。</p><div class="menuFooter">VER. 1.0 FINAL · AI HYBRID JUDGEMENT · CPU / ONLINE</div></div><div class="menuButtons"><button id="menuCpuBtn" class="menuBtn primaryMenu">CPU BATTLE<small>1人でテストプレイ</small></button><button id="menuOnlineBtn" class="menuBtn onlineMenu">ONLINE BATTLE<small>ルームコードで友達と対戦</small></button><button id="menuRulesBtn" class="menuBtn">RULES<small>ゲームルールを確認</small></button><button id="menuGalleryBtn" class="menuBtn galleryMenu">CARD GALLERY<small>これまで作ったカードを鑑賞</small></button><button id="menuBgmBtn" class="menuBtn">BGM / SOUND<small>クリックでBGMをON/OFF</small></button></div></div></div><div id="rulesModal" class="rulesModal"><div class="rulesCard"><div class="row" style="justify-content:space-between"><h2>DDD RULES</h2><button id="rulesCloseBtn" class="btn secondary">閉じる</button></div><div class="rulesGrid"><div class="ruleItem"><b>勝利条件</b><br>先に5勝したプレイヤーが勝利。</div><div class="ruleItem"><b>1ラウンド</b><br>60秒で絵を1枚描く → 名付け → 提出 → カード公開後、両者READYでバトル開始。</div><div class="ruleItem"><b>モンスター</b><br>モンスター同士なら属性相性込みでバトル。</div><div class="ruleItem"><b>サポート</b><br>1試合1枚のみ。その代わり非常に強力な逆転用の切り札。劣勢時は逆転補正も入る。</div><div class="ruleItem"><b>組み合わせ</b><br>モンスターvsサポートはバトルせずサポート効果のみ。サポート同士は双方発動。</div><div class="ruleItem"><b>自動判定</b><br>絵柄＋カード名＋ブラウザ内AIで能力・属性・効果を決定。</div></div></div></div><div id="galleryModal" class="galleryModal"><div class="galleryCard"><div class="galleryHead"><div><h2>CARD GALLERY</h2><div class="small">あなたが作ったカードをこのブラウザに保存。新しい順に最大30枚。</div></div><div class="row"><button id="galleryClearBtn" class="btn danger">全カード削除</button><button id="galleryCloseBtn" class="btn secondary">閉じる</button></div></div><div id="galleryGrid" class="galleryGrid"></div></div></div><div id="galleryDetail" class="galleryDetail"><div class="galleryDetailInner"><div id="galleryDetailCard"></div><div id="galleryDetailMeta" class="galleryMeta" style="text-align:center"></div><div class="galleryDetailActions"><button id="galleryDetailCloseBtn" class="btn secondary">一覧へ戻る</button></div></div></div><button id="backTitleBtn" class="btn secondary backTitle">← TITLE</button>
 
 <div class="effectLayer" id="effectLayer"><div class="effectText" id="effectText">READY</div></div>
 <div class="audioDock" aria-label="BGM controls"><button id="bgmBtn" class="audioBtn">♪ BGM OFF</button><span class="vol">VOL</span><input id="bgmVolume" type="range" min="0" max="100" value="35" aria-label="BGM volume"></div>
@@ -280,31 +289,24 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
       </div>
       <div class="section"><span id="selectedTypePill" class="pill monster">現在: モンスター</span></div>
       <div class="tools">
-        <button class="swatch active" data-color="#111111" style="background:#111111" title="黒" aria-label="黒"></button>
-        <button class="swatch" data-color="#ffffff" style="background:#ffffff" title="白" aria-label="白"></button>
-        <button class="swatch" data-color="#808080" style="background:#808080" title="灰色" aria-label="灰色"></button>
-        <button class="swatch" data-color="#d64045" style="background:#d64045" title="赤" aria-label="赤"></button>
-        <button class="swatch" data-color="#f48fb1" style="background:#f48fb1" title="ピンク" aria-label="ピンク"></button>
-        <button class="swatch" data-color="#f49c2f" style="background:#f49c2f" title="オレンジ" aria-label="オレンジ"></button>
-        <button class="swatch" data-color="#f5d547" style="background:#f5d547" title="黄色" aria-label="黄色"></button>
-        <button class="swatch" data-color="#23b26d" style="background:#23b26d" title="緑" aria-label="緑"></button>
-        <button class="swatch" data-color="#8bd450" style="background:#8bd450" title="黄緑" aria-label="黄緑"></button>
-        <button class="swatch" data-color="#2d7ff9" style="background:#2d7ff9" title="青" aria-label="青"></button>
-        <button class="swatch" data-color="#49cddd" style="background:#49cddd" title="水色" aria-label="水色"></button>
-        <button class="swatch" data-color="#8d4bff" style="background:#8d4bff" title="紫" aria-label="紫"></button>
+        <button class="swatch active" data-color="#111111" style="background:#111111"></button>
+        <button class="swatch" data-color="#d64045" style="background:#d64045"></button>
+        <button class="swatch" data-color="#2d7ff9" style="background:#2d7ff9"></button>
+        <button class="swatch" data-color="#23b26d" style="background:#23b26d"></button>
+        <button class="swatch" data-color="#8d4bff" style="background:#8d4bff"></button>
+        <button class="swatch" data-color="#f49c2f" style="background:#f49c2f"></button>
         <span class="small">太さ</span>
         <input id="brushSize" type="range" min="6" max="72" value="18">
         <span id="brushLabel" class="small">18px</span>
       </div>
       <div class="row" style="margin-bottom:10px"><button id="penBtn" class="btn secondary">✎ ペン</button><button id="eraserBtn" class="btn secondary">消しゴム</button><button id="bucketBtn" class="btn secondary">▣ バケツ</button><button id="undoBtn" class="btn secondary" disabled>↶ 一筆戻す</button><button id="clearBtn" class="btn danger">全消し</button><button id="canvasZoomBtn" class="btn secondary">⛶ キャンバス拡大</button></div>
-      <div id="drawCountdown" class="drawCountdown" hidden><span id="drawCountdownLabel">残り時間</span><strong id="drawSeconds">60秒</strong></div>
-      <div id="canvasWrap" class="canvasWrap"><button id="canvasZoomCloseBtn" class="canvasZoomClose" type="button">縮小して戻る ✕</button><canvas id="drawCanvas" width="640" height="640"></canvas><div class="canvasZoomHint">ESCでも閉じられます</div></div>
+      <div id="canvasWrap" class="canvasWrap"><button id="canvasZoomCloseBtn" class="canvasZoomClose" type="button">縮小して戻る ✕</button><div class="canvasZoomTools" aria-label="拡大キャンバス用ツール"><div class="canvasZoomColors"><button class="swatch zoomSwatch active" data-color="#111111" style="background:#111111" title="黒"></button><button class="swatch zoomSwatch" data-color="#d64045" style="background:#d64045" title="赤"></button><button class="swatch zoomSwatch" data-color="#2d7ff9" style="background:#2d7ff9" title="青"></button><button class="swatch zoomSwatch" data-color="#23b26d" style="background:#23b26d" title="緑"></button><button class="swatch zoomSwatch" data-color="#8d4bff" style="background:#8d4bff" title="紫"></button><button class="swatch zoomSwatch" data-color="#f49c2f" style="background:#f49c2f" title="橙"></button></div><div class="canvasZoomToolButtons"><button id="zoomPenBtn" class="btn secondary" type="button">✎ ペン</button><button id="zoomEraserBtn" class="btn secondary" type="button">消しゴム</button><button id="zoomBucketBtn" class="btn secondary" type="button">▣ バケツ</button><button id="zoomUndoBtn" class="btn secondary" type="button" disabled>↶ 一筆戻す</button><button id="zoomClearBtn" class="btn danger" type="button">全消し</button></div><div class="canvasZoomBrush"><span class="small">太さ</span><input id="zoomBrushSize" type="range" min="6" max="72" value="18"><span id="zoomBrushLabel" class="small">18px</span></div></div><canvas id="drawCanvas" width="640" height="640"></canvas><div class="canvasZoomHint">色・ペン・消しゴム・バケツ・Undoをこの画面のまま変更できます · ESCでも閉じられます</div></div>
       <div class="section"><input id="cardName" class="input" maxlength="22" placeholder="時間切れ後にカード名を入力" disabled></div>
       <div class="section row"><button id="previewBtn" class="btn secondary">プレビュー更新</button><button id="finishDrawingBtn" class="btn secondary" disabled>描き終わり → 名付けへ</button><button id="submitBtn" class="btn primary" disabled>この1枚で提出する</button></div>
       <div id="submitState" class="submitState small">まずオンライン接続してください。</div>
       <div class="section note"><div class="row" style="justify-content:space-between;align-items:center"><div><b>AI判定：</b><span id="aiStatus">未起動</span></div><button id="aiRetryBtn" class="btn secondary" type="button">AIを起動 / 再試行</button></div><div id="aiProgress" class="small" style="margin-top:6px">ゲーム開始時にAIを先読みします。</div><span id="aiSummary" class="small">AI対応時は絵の意味・強そうさ・属性・役割を画像AIでも解析し、名前＋描画特徴と合成します。失敗時は従来判定へ自動切替。</span></div>
       <div class="section previewBox"><h3 style="margin-top:0">カードのプレビュー</h3><div id="previewArea" class="small">まだ作成されていません。</div></div>
-      <div class="small section">追加仕様：<br>・モンスターには火/水/地/風/光/闇の属性が付き、相性で戦闘力補正<br>・サポートは次のモンスター戦へ<b>強化 / 防御加算 / 弱体化</b>を付与<br>・神イベントはたまにだけ発生。逆転の天秤など、試合をひっくり返すレアイベントもあり</div>
+      <div class="small section">追加仕様：<br>・モンスターには火/水/地/風/光/闇の属性が付き、相性でダメージ補正<br>・サポートは攻撃・防御・回復だけでなく、<b>反射 / 吸収 / 奇跡 / 混沌</b>などもあり<br>・神イベントはたまにだけ発生。逆転の天秤など、試合をひっくり返すレアイベントもあり</div>
     </section>
 
     <section class="panel arenaPanel">
@@ -336,11 +338,12 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
     </section>
   </div>
 </div>
+<canvas id="cinematicFxCanvas" aria-hidden="true"></canvas><div id="cinematicVignette" class="cinematicVignette" aria-hidden="true"></div>
 <div id="attributeAttackFx" class="attributeAttackFx" aria-hidden="true"><div class="attackLabel" id="attributeAttackLabel"></div><div class="trail"></div><div class="attackCore"></div><div class="impact"></div></div>
 <div id="fxOverlay" class="fxOverlay"><div id="fxText" class="fxText"></div></div>
 <script>
 (() => {
-  // Victory is determined solely by WIN_TARGET.
+  const MAX_HP = 100;
   const DRAW_MS = 60000;
   const SUPPORT_LIMIT = 1;
   const WIN_TARGET = 5;
@@ -372,7 +375,6 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
   let aiLoadPromise = null;
   let aiVisual = null;
   let aiAnalyzing = false;
-  let aiGeneration=0;
   let aiRoundToken = '';
   const AI_MODEL = 'Xenova/mobileclip_s0';
   // Procedural BGM: fully generated with Web Audio, no external music file.
@@ -476,15 +478,15 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
 
   const EVENTS = [
     { id:'calm', name:'静穏', desc:'このラウンドは神イベントなし。', weight:0 },
-    { id:'meteor', name:'流星雨', desc:'双方の次のモンスター戦の戦闘力 -2。', weight:10 },
-    { id:'blessing', name:'祝福の雨', desc:'双方の次のモンスター戦の戦闘力 +3。', weight:9 },
+    { id:'meteor', name:'流星雨', desc:'ラウンド開始時、双方に5ダメージ。', weight:10 },
+    { id:'blessing', name:'祝福の雨', desc:'ラウンド開始時、双方が7回復。', weight:9 },
     { id:'armorbreak', name:'審判の風', desc:'双方の蓄積防御が半分になる。', weight:8 },
-    { id:'chaos', name:'混沌神の気まぐれ', desc:'双方の次戦強化に0〜4をランダム加算。', weight:8 },
-    { id:'double', name:'双撃の祭壇', desc:'モンスター戦の最終戦闘力を双方2倍。', weight:7 },
+    { id:'chaos', name:'混沌神の気まぐれ', desc:'一度だけ強めのランダム追加効果が発生。', weight:8 },
+    { id:'double', name:'双撃の祭壇', desc:'モンスター戦の攻撃力差ダメージが大きくなる。', weight:7 },
     { id:'holy', name:'聖域', desc:'光属性が強化され、闇属性がやや弱体化。', weight:7 },
     { id:'abyss', name:'奈落', desc:'闇属性が強化され、光属性がやや弱体化。', weight:7 },
-    { id:'mirror', name:'反響の間', desc:'サポートの次戦強化・防御加算が1.5倍。', weight:7 },
-    { id:'reversal', name:'逆転の天秤', desc:'勝利数が少ない側の次戦を強化。勝利数差が大きいほど効果増加。', weight:5 }
+    { id:'mirror', name:'反響の間', desc:'サポートの回復・防御効果が増幅される。', weight:7 },
+    { id:'reversal', name:'逆転の天秤', desc:'HPが低い側に神の加護。大差でも逆転の目が生まれる。', weight:5 }
   ];
 
   const typeToSupportFallback = { attack:'boost', defend:'barrier', heal:'heal', chaos:'chaos' };
@@ -509,16 +511,30 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
 
   function setBrushUI(){
     $('brushLabel').textContent = brushSize + 'px';
+    if($('zoomBrushLabel')) $('zoomBrushLabel').textContent = brushSize + 'px';
+    if($('brushSize')) $('brushSize').value = brushSize;
+    if($('zoomBrushSize')) $('zoomBrushSize').value = brushSize;
     $('penBtn').classList.toggle('primary', !erasing && !bucketMode);
     $('eraserBtn').classList.toggle('primary', erasing && !bucketMode);
     $('bucketBtn')?.classList.toggle('primary', bucketMode);
+    $('zoomPenBtn')?.classList.toggle('primary', !erasing && !bucketMode);
+    $('zoomEraserBtn')?.classList.toggle('primary', erasing && !bucketMode);
+    $('zoomBucketBtn')?.classList.toggle('primary', bucketMode);
     document.querySelectorAll('.swatch').forEach(el => el.classList.toggle('active', !erasing && el.dataset.color === brushColor));
   }
-  $('brushSize').addEventListener('input', e => { brushSize = +e.target.value; setBrushUI(); });
-  $('eraserBtn').onclick = () => { erasing = true; bucketMode = false; setBrushUI(); };
-  $('penBtn').onclick = () => { erasing = false; bucketMode = false; setBrushUI(); };
-  $('bucketBtn').onclick = () => { erasing = false; bucketMode = true; setBrushUI(); };
-  document.querySelectorAll('.swatch').forEach(btn => btn.onclick = () => { brushColor = btn.dataset.color; erasing = false; setBrushUI(); });
+  const setBrushSizeFromInput = e => { brushSize = +e.target.value; setBrushUI(); };
+  $('brushSize').addEventListener('input', setBrushSizeFromInput);
+  $('zoomBrushSize')?.addEventListener('input', setBrushSizeFromInput);
+  const choosePen = () => { erasing = false; bucketMode = false; setBrushUI(); };
+  const chooseEraser = () => { erasing = true; bucketMode = false; setBrushUI(); };
+  const chooseBucket = () => { erasing = false; bucketMode = true; setBrushUI(); };
+  $('eraserBtn').onclick = chooseEraser;
+  $('penBtn').onclick = choosePen;
+  $('bucketBtn').onclick = chooseBucket;
+  if($('zoomEraserBtn')) $('zoomEraserBtn').onclick = chooseEraser;
+  if($('zoomPenBtn')) $('zoomPenBtn').onclick = choosePen;
+  if($('zoomBucketBtn')) $('zoomBucketBtn').onclick = chooseBucket;
+  document.querySelectorAll('.swatch').forEach(btn => btn.onclick = () => { brushColor = btn.dataset.color; erasing = false; bucketMode = false; setBrushUI(); });
   setBrushUI();
 
   function setCanvasZoom(on){
@@ -554,8 +570,11 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
 
   function pointFromEvent(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*(canvas.width/r.width),y:(e.clientY-r.top)*(canvas.height/r.height)};}
   function updateUndoButton(){
+    const disabled = !drawingAllowed() || drawHistory.length === 0;
     const btn=$('undoBtn');
-    if(btn) btn.disabled = !drawingAllowed() || drawHistory.length === 0;
+    if(btn) btn.disabled = disabled;
+    const zoomBtn=$('zoomUndoBtn');
+    if(zoomBtn) zoomBtn.disabled = disabled;
   }
   function resetDrawHistory(){ drawHistory=[]; updateUndoButton(); }
   function pushDrawHistory(){
@@ -574,7 +593,7 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
     refreshPreview();
     updateUndoButton();
   }
-  function markAiDirty(){ aiGeneration++; aiAnalyzing=false; aiVisual=null; aiRoundToken=''; if($('aiStatus')) $('aiStatus').textContent='未解析'; }
+  function markAiDirty(){ aiVisual=null; aiRoundToken=''; if($('aiStatus')) $('aiStatus').textContent='未解析'; }
   function pressureWidth(e){if(e.pointerType==='pen' && typeof e.pressure==='number' && e.pressure>0){return Math.max(1.5,brushSize*(0.35+e.pressure*1.25));}return brushSize;}
   function drawDot(pt,width){markAiDirty();ctx.fillStyle=erasing?'#ffffff':brushColor;ctx.beginPath();ctx.arc(pt.x,pt.y,width/2,0,Math.PI*2);ctx.fill();}
   function hexRgb(hex){ const h=hex.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16),255]; }
@@ -602,7 +621,10 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
     ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);$('cardName').value='';markAiDirty();refreshPreview();updateUndoButton();
   }
   $('undoBtn').onclick = undoDraw;
-  $('clearBtn').onclick = () => clearCanvas(true); $('previewBtn').onclick = refreshPreview;
+  if($('zoomUndoBtn')) $('zoomUndoBtn').onclick = undoDraw;
+  $('clearBtn').onclick = () => clearCanvas(true);
+  if($('zoomClearBtn')) $('zoomClearBtn').onclick = () => clearCanvas(true);
+  $('previewBtn').onclick = refreshPreview;
   document.addEventListener('keydown',e=>{
     if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='z' && drawingAllowed()){
       e.preventDefault(); undoDraw();
@@ -699,7 +721,7 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
     if(r>180 && g>160 && b<120) return 'thunder';
     return 'neutral';
   }
-  function elementLabel(e){return ({fire:'炎',water:'水',thunder:'雷',wind:'風',earth:'土',light:'光',dark:'闇',neutral:'無'})[e]||'無';}
+  function elementLabel(e){return ({fire:'炎',water:'水',thunder:'雷',wind:'風',earth:'土',light:'光',dark:'闇',shadow:'闇',neutral:'無'})[e]||'無';}
   function elementMultiplier(a,b){
     const strong={fire:['earth'],water:['fire'],thunder:['water'],wind:['earth'],earth:['thunder'],light:['dark'],dark:['light']};
     const weak={fire:['water'],water:['thunder'],thunder:['earth'],wind:['thunder'],earth:['wind'],light:['light'],dark:['dark']};
@@ -708,7 +730,7 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
     return 1;
   }
 
-  function elementName(key){ return {fire:'火',water:'水',earth:'地',wind:'風',light:'光',shadow:'闇'}[key] || '無'; }
+  function elementName(key){ return {fire:'火',water:'水',thunder:'雷',earth:'地',wind:'風',light:'光',dark:'闇',shadow:'闇',neutral:'無'}[key] || '無'; }
 
   function normalizedGroupScores(output, groups){
     const by = Object.fromEntries(output.map(x => [x.label, Number(x.score)||0]));
@@ -866,97 +888,42 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
 
   async function ensureAiAnalysis(){
     if(aiAnalyzing || aiVisual || !viewGame || viewGame.over || !namingAllowed() || mySubmitted) return;
-    const token = `${viewGame.round}:${canvas.toDataURL('image/png')}`;
-    const analysisGame=viewGame.startAt, generation=++aiGeneration;
-    const current=()=>generation===aiGeneration && aiRoundToken===token && viewGame?.startAt===analysisGame && namingAllowed();
+    const roundAtStart=viewGame.round;
+    const image = canvas.toDataURL('image/png');
+    const token = `${roundAtStart}:${image.slice(-96)}`;
     if(aiRoundToken===token) return;
     aiRoundToken=token; aiAnalyzing=true;
     $('aiStatus').textContent='絵をAI解析中…'; if($('aiProgress')) $('aiProgress').textContent='描いたイラストを画像AIで判定しています…';
     $('submitBtn').disabled=true;
-    let timeout;
     try{
-      const image=canvas.toDataURL('image/png');
-      const analysis=(async()=>{
-        const classifier=await loadAiClassifier();
-        if(!current())throw Error('stale analysis');
-        const output=await classifier(image,AI_LABELS);
-        if(!current())throw Error('stale analysis');
-        const qualityOutput=await classifier(image,ART_QUALITY_LABELS);
-        return {output,qualityOutput};
-      })();
-      const {output,qualityOutput}=await Promise.race([analysis,new Promise((_,reject)=>{timeout=setTimeout(()=>reject(Error('AI timeout')),15000);})]);
-      if(!current()) return;
-      aiVisual = {...summarizeAi(output),artQuality:artQualityFromAi(qualityOutput)};
+      const classifier = await loadAiClassifier();
+      const output = await classifier(image, AI_LABELS);
+      // ラウンド移行・描き直し・提出済みになった後に返った古いAI結果は破棄。
+      if(aiRoundToken!==token || !viewGame || viewGame.round!==roundAtStart || mySubmitted) return;
+      aiVisual = summarizeAi(output);
       const r=aiVisual.role, e=aiVisual.element;
       $('aiStatus').textContent='AI解析済み'; if($('aiProgress')) $('aiProgress').textContent='AI判定をカード能力へ反映しました。';
-      $('aiSummary').textContent=`AI推定: ${r.key} ${(r.confidence*100).toFixed(0)}% / 属性 ${e.key} ${(e.confidence*100).toFixed(0)}% / 絵の完成度（AI推定）${Math.round(aiVisual.artQuality)}/100`;
+      $('aiSummary').textContent=`AI推定: ${r.key} ${(r.confidence*100).toFixed(0)}% / 属性 ${e.key} ${(e.confidence*100).toFixed(0)}% / 強さ補正 ${aiVisual.strengthDelta>=0?'+':''}${aiVisual.strengthDelta.toFixed(1)}`;
     }catch(err){
-      if(!current()) return;
+      if(aiRoundToken!==token || !viewGame || viewGame.round!==roundAtStart || mySubmitted) return;
       aiVisual = {failed:true,strengthDelta:0};
       $('aiStatus').textContent='AI利用不可 → 従来判定'; if($('aiProgress')) $('aiProgress').textContent='AI解析に失敗したため、ルールベース判定で続行します。';
-      $('aiSummary').textContent='AIモデルを読み込めなかったため、輪郭・細部のまとまりによる簡易評価（完成度のAI推定なし）で続行します。';
+      $('aiSummary').textContent='AIモデルを読み込めなかったため、名前・色・濃さ・面積・線の複雑さによる従来判定で続行します。';
     }finally{
-      clearTimeout(timeout);
-      if(generation===aiGeneration && aiRoundToken===token){aiAnalyzing=false; refreshPreview(); setInputLocks();}
+      if(aiRoundToken===token){ aiAnalyzing=false; refreshPreview(); setInputLocks(); }
     }
   }
 
   function applyAiToBase(base){
-    if(base)base.desc=describeCard(base);
     if(!aiVisual || aiVisual.failed || !base) return base;
     base.ai = {
       role:aiVisual.role.key, roleConfidence:aiVisual.role.confidence,
       element:aiVisual.element.key, elementConfidence:aiVisual.element.confidence,
       support:aiVisual.support.key, supportConfidence:aiVisual.support.confidence,
-      artQuality:aiVisual.artQuality,
+      strengthDelta:aiVisual.strengthDelta,
       top:aiVisual.top
     };
     return base;
-  }
-
-
-  // A bounded structural estimate, not a measurement of artistic merit.
-  // Normalize the drawing bounds: painting larger/darker is never a bonus.
-  function measureArtQuality(data,w,h){
-    let x0=w,y0=h,x1=-1,y1=-1;
-    const inkAt=(x,y)=>{const i=(y*w+x)*4;return data[i+3]>0 && (data[i]+data[i+1]+data[i+2])/3<248;};
-    for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(inkAt(x,y)){x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);}
-    if(x1<0)return {score:8,ceiling:8};
-    const n=64, pixels=new Float32Array(n*n*3), edges=new Uint8Array(n*n);
-    // Average samples suppress single-pixel noise before looking for contours.
-    for(let y=0;y<n;y++)for(let x=0;x<n;x++)for(let c=0;c<3;c++){
-      let sum=0;for(let dy=0;dy<2;dy++)for(let dx=0;dx<2;dx++){
-        const sx=Math.min(x1,Math.floor(x0+(x+(dx+.5)/2)*(x1-x0+1)/n));
-        const sy=Math.min(y1,Math.floor(y0+(y+(dy+.5)/2)*(y1-y0+1)/n));
-        const i=(sy*w+sx)*4;sum+=255+(data[i+c]-255)*data[i+3]/255;
-      }pixels[(y*n+x)*3+c]=sum/4;
-    }
-    let count=0,linked=0;const tiles=new Set();
-    for(let y=1;y<n-1;y++)for(let x=1;x<n-1;x++){
-      const i=y*n+x;let contrast=0;
-      for(const j of [i+1,i+n])for(let c=0;c<3;c++)contrast=Math.max(contrast,Math.abs(pixels[i*3+c]-pixels[j*3+c]));
-      if(contrast>28){edges[i]=1;count++;tiles.add((y>>3)*8+(x>>3));}
-    }
-    for(let y=1;y<n-1;y++)for(let x=1;x<n-1;x++)if(edges[y*n+x]){
-      let neighbors=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)if(dx||dy)neighbors+=edges[(y+dy)*n+x+dx];
-      if(neighbors>=1&&neighbors<=5)linked++;
-    }
-    const density=count/3844,coherence=count?linked/count:0;
-    const detail=Math.min(1,count/420),distribution=Math.min(1,tiles.size/28);
-    const noise=Math.max(0,(density-.28)/.42);
-    const score=Math.round(clamp(8+30*coherence*detail+24*distribution*detail-45*noise,8,62));
-    const ceiling=count<12?12:noise>.65?35:100;
-    return {score:Math.min(score,ceiling),ceiling};
-  }
-  const ART_QUALITY_LABELS=[
-    'a carefully finished illustration with clear intentional shapes, coherent details and balanced composition, in monochrome or color',
-    'a clear simple stylized illustration with deliberate clean contours and readable forms, in monochrome or color',
-    'an unfinished rough sketch with unclear forms and disconnected details',
-    'random scribbles, visual noise, a blank page or a flat single color fill without a recognizable drawing'
-  ];
-  function artQualityFromAi(output){
-    const weights=[100,78,38,8];
-    return output.reduce((sum,item)=>sum+(weights[ART_QUALITY_LABELS.indexOf(item.label)]||0)*item.score,0);
   }
 
   function analyzeCurrentCard(allowFallback=true){
@@ -972,16 +939,14 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
       const fallbackInfo = analyzeName(name, selectedType);
       const fallbackElement = selectedType === 'monster' ? detectElement(fallbackInfo, 0, 0, 0, 'attack') : null;
       return selectedType === 'monster'
-        ? {kind:'monster',name,score:8,role:'attack',element:'neutral',rarity:'COMMON',stats:{atk:4,shield:1},element:fallbackElement,nameInfo:fallbackInfo,image:canvas.toDataURL('image/png'),desc:'基礎攻撃4。最終戦闘力が高い側に1勝。',fallback:true}
+        ? {kind:'monster',name,score:8,role:'attack',element:'neutral',rarity:'COMMON',stats:{atk:4,shield:1,heal:0},element:fallbackElement,nameInfo:fallbackInfo,image:canvas.toDataURL('image/png'),desc:'敵に4ダメージ。絵が少なかったので弱め。',fallback:true}
         : {kind:'support',name,score:8,role:'barrier',rarity:'COMMON',power:2,nameInfo:fallbackInfo,image:canvas.toDataURL('image/png'),desc:'自分に防御2を与える。絵が少なかったので弱め。',fallback:true};
     }
     let edges=0,checks=0;
     for(let y=0;y<canvas.height-1;y+=2){for(let x=0;x<canvas.width-1;x+=2){const idx=y*canvas.width+x; if(Math.abs(gray[idx]-gray[idx+1])>35) edges++; if(Math.abs(gray[idx]-gray[idx+canvas.width])>35) edges++; checks+=2;}}
     const coverage=ink/(canvas.width*canvas.height), avgDark=dark/ink/255, avgR=rs/ink, avgG=gs/ink, avgB=bs/ink, avgSat=sat/ink, edgeDensity=edges/checks;
     const nameInfo = analyzeName(name, selectedType);
-    const art = measureArtQuality(data,canvas.width,canvas.height);
-    const aiQuality = aiVisual && !aiVisual.failed && Number.isFinite(aiVisual.artQuality) ? aiVisual.artQuality : null;
-    let score = Math.round(Math.min(art.ceiling, aiQuality===null ? art.score : art.score*.2+aiQuality*.8));
+    let score = Math.round((coverage*135) + (avgDark*38) + (edgeDensity*72) + (avgSat*15) + nameInfo.powerBonus + (aiVisual && !aiVisual.failed ? aiVisual.strengthDelta : 0));
     score = clamp(score, 8, 100);
     const artRole = decideRole(avgR,avgG,avgB,avgDark);
     const rarity = score>=90?'LEGEND':score>=75?'EPIC':score>=55?'RARE':'COMMON';
@@ -992,18 +957,31 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
       const power = Math.max(1, Math.ceil(score / 10));
       let atk = Math.max(3, power + (role==='attack'?5: role==='chaos'?3: role==='defend'?2:1) + nameInfo.attackBoost);
       let shield = Math.max(0, Math.floor(power/2) + (role==='defend'?6: role==='chaos'?2:1) + nameInfo.shieldBoost);
-      if(score>=80) atk += 3; if(nameInfo.fast) atk += 1;
+      let heal = Math.max(0, Math.floor(power/3) + (role==='heal'?7: role==='chaos'?2:0) + nameInfo.healBoost);
+      if(score>=80) atk += 3; if(nameInfo.fast) atk += 1; if(nameInfo.drain && role==='heal') heal += 1;
       let element = detectElement(nameInfo, avgR, avgG, avgB, role);
       const hasElementName = nameInfo.fireWord||nameInfo.waterWord||nameInfo.earthWord||nameInfo.windWord||nameInfo.lightWord||nameInfo.shadowWord;
       if(!hasElementName && aiVisual && !aiVisual.failed && aiVisual.element.confidence>=0.30 && aiVisual.element.margin>=0.05) element=aiVisual.element.key==='dark'?'shadow':aiVisual.element.key;
-      const desc = describeCard({kind:'monster'});
-      return applyAiToBase({kind:'monster',name,score,role,rarity,stats:{atk,shield},element,nameInfo,image:canvas.toDataURL('image/png'),desc});
+      const desc = role==='attack' ? `敵に${atk}ダメージ。${nameInfo.fast?' 会心率アップ。':''}${nameInfo.pierce?' 貫通。':''}${nameInfo.drain?' 吸収。':''}`
+        : role==='defend' ? `防御${shield}を得て、敵に${Math.max(2,Math.floor(atk/2))}ダメージ。${nameInfo.pierce?' 貫通。':''}`
+        : role==='heal' ? `HPを${heal}回復し、敵に${Math.max(2,Math.floor(atk/2))}ダメージ。${nameInfo.drain?' 吸収。':''}`
+        : `カオス効果：大ダメージ / 回復 / 防御のいずれか。`;
+      return applyAiToBase({kind:'monster',name,score,role,rarity,stats:{atk,shield,heal},element,nameInfo,image:canvas.toDataURL('image/png'),desc});
     }
 
     let supportType = nameInfo.supportType !== 'neutral' ? nameInfo.supportType : (typeToSupportFallback[artRole] || 'boost');
     if(nameInfo.supportType==='neutral' && aiVisual && !aiVisual.failed && aiVisual.support.confidence>=0.28 && aiVisual.support.margin>=0.04) supportType=aiVisual.support.key;
     const power = Math.max(2, Math.floor(score/12) + 2 + nameInfo.powerBoost);
-    const descMap = {[supportType]:describeCard({kind:'support',role:supportType})};
+    const descMap = {
+      boost:`切り札級の直接攻撃。基礎威力${power}から大幅増幅。`,
+      barrier:`巨大な防御障壁を展開。基礎値${power}から大幅増幅。`,
+      heal:`大量回復。基礎値${power}から大幅増幅。`,
+      curse:`強烈なダメージ＋相手の防御を大きく破壊。`,
+      focus:`ダメージを与えつつ巨大な防御を得る。`,
+      mirror:`強力な反射障壁を展開し、次の被ダメージを跳ね返す。`,
+      miracle:`大回復・大ダメージ・大防御・生命強奪のいずれか。`,
+      chaos:`強烈だが読めない切り札効果。`,
+    };
     return applyAiToBase({kind:'support',name,score,role:supportType,rarity,nameInfo,power,image:canvas.toDataURL('image/png'),desc:descMap[supportType]});
   }
 
@@ -1014,38 +992,27 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
       return Array.isArray(arr)?arr:[];
     }catch(e){return [];}
   }
-  function trimGallery(list){
-    let ordinary=0;
-    return list.filter(entry=>entry.favorite===true || ++ordinary<=GALLERY_LIMIT);
-  }
-  function persistGallery(list){
-    try{localStorage.setItem(GALLERY_KEY,JSON.stringify(trimGallery(list)));return true;}
-    catch(e){
-      console.warn('Gallery save failed',e);
-      alert('ギャラリーを保存できませんでした。保存容量またはブラウザ設定を確認してください。既存のお気に入りは削除していません。');
-      return false;
-    }
-  }
   function saveCardToGallery(card){
-    const list=loadGallery();
-    list.unshift({
-      id:globalThis.crypto?.randomUUID ? crypto.randomUUID() : Date.now()+'-'+Math.random().toString(36).slice(2),
-      createdAt:Date.now(),round:viewGame?.round||authGame?.round||1,
-      mode:gameMode==='cpu'?'CPU':'ONLINE',favorite:false,card:cloneCard(card)
-    });
-    return persistGallery(list);
-  }
-  let galleryDetailId=null;
-  function toggleGalleryFavorite(id){
-    const list=loadGallery(),entry=list.find(item=>item.id===id);
-    if(!entry)return;
-    entry.favorite=entry.favorite!==true;
-    if(!persistGallery(list))return;
-    renderGallery();
-    if(galleryDetailId===id){
-      const saved=loadGallery().find(item=>item.id===id);
-      if(saved)openGalleryDetail(saved);else closeGalleryDetail();
-    }
+    try{
+      const list=loadGallery();
+      const stored=cloneCard(card);
+      // localStorageを巨大なPNGで埋めないよう、現在の作画を軽量WebPへ圧縮して保存。
+      try{ if(stored && canvas) stored.image=canvas.toDataURL('image/webp',0.72); }catch(_){ }
+      const entry={
+        id:(window.crypto?.randomUUID)?window.crypto.randomUUID():(Date.now()+'-'+Math.random().toString(36).slice(2)),
+        createdAt:Date.now(),
+        round:viewGame?.round||authGame?.round||1,
+        mode:gameMode==='cpu'?'CPU':'ONLINE',
+        card:stored
+      };
+      list.unshift(entry);
+      if(list.length>GALLERY_LIMIT) list.length=GALLERY_LIMIT;
+      // 容量上限に当たった場合は古いカードから減らして保存を継続。
+      while(list.length){
+        try{ localStorage.setItem(GALLERY_KEY,JSON.stringify(list)); break; }
+        catch(err){ list.pop(); if(!list.length) throw err; }
+      }
+    }catch(e){ console.warn('Gallery save failed',e); }
   }
   function renderGallery(){
     const list=loadGallery();
@@ -1060,40 +1027,33 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
       item.className='galleryItem';
       const d=new Date(entry.createdAt);
       item.innerHTML=cardHTML(entry.card)+`<div class="galleryMeta">${escapeHTML(entry.mode)} / ROUND ${entry.round}<br>${d.toLocaleString('ja-JP')}</div>`;
-      const star=document.createElement('button');
-      star.className='galleryFavorite';
-      star.type='button';
-      star.textContent=entry.favorite===true?'★ お気に入り':'☆ お気に入り';
-      star.setAttribute('aria-pressed',String(entry.favorite===true));
-      star.setAttribute('aria-label',entry.card.name+(entry.favorite===true?'のお気に入りを解除':'をお気に入りに登録'));
-      star.addEventListener('click',event=>{event.stopPropagation();toggleGalleryFavorite(entry.id);});
-      item.appendChild(star);
-      item.addEventListener('click',()=>openGalleryDetail(loadGallery().find(x=>x.id===entry.id)||entry));
+      item.addEventListener('click',()=>openGalleryDetail(entry));
       grid.appendChild(item);
     });
   }
   function openGallery(){ renderGallery(); $('galleryModal').classList.add('show'); }
   function closeGallery(){ $('galleryModal').classList.remove('show'); }
   function openGalleryDetail(entry){
-    galleryDetailId=entry.id;
-    $('galleryFavoriteBtn').textContent=entry.favorite===true?'★ お気に入り':'☆ お気に入り';
-    $('galleryFavoriteBtn').setAttribute('aria-pressed',String(entry.favorite===true));
     $('galleryDetailCard').innerHTML=cardHTML(entry.card);
     const d=new Date(entry.createdAt);
     $('galleryDetailMeta').textContent=`${entry.mode} / ROUND ${entry.round} / ${d.toLocaleString('ja-JP')}`;
     $('galleryDetail').classList.add('show');
   }
-  function closeGalleryDetail(){ galleryDetailId=null; $('galleryDetail').classList.remove('show'); }
+  function closeGalleryDetail(){ $('galleryDetail').classList.remove('show'); }
 
   function cardHTML(card){
-    if(!card) return '';
+    if(!card || typeof card!=='object') return '';
     const isSupport = card.kind === 'support';
-    const badgeClass = isSupport ? 'supportBadge' : card.role;
-    const displayRole=card.role==='heal'?'加護':card.role.toUpperCase();
-    const badgeText = isSupport ? `SUPPORT / ${displayRole}` : `${displayRole} / ${card.rarity}`;
-    const nums = isSupport ? `<span>✨ 効果 ${card.power}</span>` : `<span>⚔ 攻撃 ${card.stats.atk}</span><span>🛡 防御 ${card.stats.shield}</span>`; const elem = !isSupport ? `<span class="element">${elementLabel(card.element||'neutral')}</span>` : ''; 
-
-    return `<div class="card ${isSupport ? 'supportCard' : ''}"><div class="thumb"><img src="${card.image}" alt="card art"></div><div class="score">作品パワー ${card.score}</div><div class="meta"><div class="badge ${badgeClass}">${escapeHTML(badgeText)}</div>${elem}<div class="title">${escapeHTML(card.name)}</div><div class="desc">${escapeHTML(describeCard(card))}</div><div class="nums">${nums}</div></div></div>`;
+    const role=String(card.role|| (isSupport?'boost':'attack'));
+    const rarity=String(card.rarity||'COMMON');
+    const stats=(card.stats&&typeof card.stats==='object')?card.stats:{};
+    const badgeClass = isSupport ? 'supportBadge' : (['attack','defend','heal','chaos'].includes(role)?role:'attack');
+    const badgeText = isSupport ? `SUPPORT / ${role.toUpperCase()}` : `${role.toUpperCase()} / ${rarity}`;
+    const nums = isSupport ? `<span>✨ 効果 ${Math.round(finiteNum(card.power,0,0,999))}</span>` : `<span>⚔ 攻撃 ${Math.round(finiteNum(stats.atk,0,0,999))}</span><span>🛡 防御 ${Math.round(finiteNum(stats.shield,0,0,999))}</span><span>✚ 回復 ${Math.round(finiteNum(stats.heal,0,0,999))}</span>`;
+    const elem = !isSupport ? `<span class="element">${elementLabel(card.element||'neutral')}</span>` : ''; 
+    const typeLine = isSupport ? '' : `<div class="typeLine"><span class="typeMini">属性: ${elementName(card.element||'neutral')}</span></div>`;
+    const image=typeof card.image==='string'?card.image:'';
+    return `<div class="card ${isSupport ? 'supportCard' : ''}"><div class="thumb"><img src="${image}" alt="card art"></div><div class="score">強そう度 ${Math.round(finiteNum(card.score,0,0,100))}</div><div class="meta"><div class="badge ${badgeClass}">${escapeHTML(badgeText)}</div>${elem}<div class="title">${escapeHTML(card.name||'名もなきカード')}</div>${typeLine}<div class="desc">${escapeHTML(card.desc||'')}</div><div class="nums">${nums}</div></div></div>`;
   }
 
   function refreshPreview(){
@@ -1112,16 +1072,23 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
   $('submitBtn').onclick = () => submitCurrent(false);
   async function submitCurrent(auto){
     if(!viewGame || viewGame.over || !namingAllowed() || mySubmitted) return;
-    const submissionRound=viewGame.round, submissionGame=viewGame.startAt;
     if(!aiVisual && !aiAnalyzing){ await ensureAiAnalysis(); }
-    if(!viewGame || viewGame.round!==submissionRound || viewGame.startAt!==submissionGame || !namingAllowed())return;
     if(aiAnalyzing) return;
     if(!canSubmit()) return;
     if(selectedType === 'support' && !canChooseSupport()){ alert('この試合ではサポートカードはもう使い切っています。'); setSelectedType('monster'); return; }
     const card = createSubmissionCard();
     saveCardToGallery(card);
-    mySubmitted = true;
-    if(gameMode==='cpu') cpuPlayerSubmit(card); else if(role === 'host') hostSubmit('host', card); else send({type:'submitCard', card,round:viewGame.round,startAt:viewGame.startAt});
+    mySubmitted = true; // 二重クリック防止。直後のstateでサーバー正本へ再同期する。
+    let accepted=true;
+    if(gameMode==='cpu') accepted=cpuPlayerSubmit(card);
+    else if(role === 'host') accepted=hostSubmit('host', card, viewGame.round);
+    else send({type:'submitCard',round:viewGame.round,card});
+    if(accepted===false){
+      mySubmitted=!!viewGame.mySubmitted;
+      $('submitState').textContent='提出状態を再同期しました。もう一度確認してください。';
+      setInputLocks();
+      return;
+    }
     $('submitState').textContent = auto ? '自動提出しました。相手の提出を待っています。' : '提出済み。相手の提出を待っています。';
   }
 
@@ -1130,8 +1097,8 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
   $('joinBtn').onclick = () => { const id=$('joinCode').value.trim(); if(!id){alert('コードを入力してください');return;} cleanupPeer(); gameMode='online'; role='guest'; peer=new Peer(); peer.on('open', ()=>setupConn(peer.connect(id,{reliable:true}))); peer.on('error', e=>setStatus('接続エラー: '+e.type,'wait')); };
   $('copyBtn').onclick = async () => { try{ await navigator.clipboard.writeText($('hostCode').textContent); $('copyBtn').textContent='コピーしました'; } catch(e){ alert('コピーできませんでした。長押しでコピーしてください。'); } };
 
-  function cleanupPeer(){ clearTimeout(introTask); clearTimeout(drawTask); scheduledStart=null; remoteReady=false; clockOffset=0; clockSamples=0; bestClockRtt=Infinity; if(conn)try{conn.close();}catch(e){} if(peer)try{peer.destroy();}catch(e){} conn=null; peer=null; authGame=null; viewGame=null; mySubmitted=false; earlyFinished=false; stopLocalTimer(); clearCanvas(); setSelectedType('monster'); renderBattle(); setStatus('未接続','wait'); }
-  function setupConn(c){ conn=c; conn.on('open', ()=>{ setStatus('接続済み','ready'); if(role==='host') startHostGame(); else {send({type:'hello'});send({type:'clockPing',sent:Date.now()});} renderBattle(); announce('CONNECTED','event'); }); conn.on('data', onData); conn.on('close', ()=>{ setStatus('切断されました','wait'); authGame=null; viewGame=null; mySubmitted=false; stopLocalTimer(); renderBattle(); }); conn.on('error', ()=>setStatus('通信エラー','wait')); }
+  function cleanupPeer(){ clearTimeout(introTask); clearTimeout(drawTask); scheduledStart=null; remoteReady=false; clockOffset=0; clockSamples=0; bestClockRtt=Infinity; if(conn)try{conn.close();}catch(e){} if(peer)try{peer.destroy();}catch(e){} conn=null; peer=null; authGame=null; viewGame=null; mySubmitted=false; earlyFinished=false; localRoundSeen=null; aiAnalyzing=false; aiVisual=null; aiRoundToken=''; stopLocalTimer(); clearCanvas(); setSelectedType('monster'); renderBattle(); setStatus('未接続','wait'); }
+  function setupConn(c){ conn=c; conn.on('open', ()=>{ setStatus('接続済み','ready'); if(role==='host') startHostGame(); else {send({type:'hello'});send({type:'clockPing',sent:Date.now()});} renderBattle(); announce('CONNECTED','event'); }); conn.on('data', onData); conn.on('close', ()=>{ setStatus('切断されました','wait'); authGame=null; viewGame=null; mySubmitted=false; earlyFinished=false; localRoundSeen=null; aiAnalyzing=false; stopLocalTimer(); renderBattle(); }); conn.on('error', ()=>setStatus('通信エラー','wait')); }
   function setStatus(text, cls){ $('connStatus').textContent=text; $('connStatus').className=cls; }
   function send(obj){ if(conn&&conn.open) conn.send(obj); }
   function onData(m){ if(!m||!m.type) return;
@@ -1144,9 +1111,9 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
     }
     if(m.type==='clockReady' && role==='host'){remoteReady=true;renderBattle();return;}
     if(m.type==='hello'&&role==='host'){ if(!authGame) startHostGame(); else broadcastState(); }
-    else if(m.type==='state'){ viewGame=m.state; if(viewGame.phase==='draw' && viewGame.startAt && gameNow()<viewGame.deadline-DRAW_MS) viewGame.phase='roundIntro'; mySubmitted=!!m.state.mySubmitted; renderBattle(); }
-    else if(m.type==='submitCard'&&role==='host'){ if(m.round===authGame?.round && m.startAt===authGame?.startAt)hostSubmit('guest', m.card); }
-    else if(m.type==='battleReady'&&role==='host'){ markBattleReady('guest'); }
+    else if(m.type==='state'){ viewGame=m.state; if(viewGame.round===1 && viewGame.phase==='draw' && viewGame.startAt && gameNow()<viewGame.deadline-DRAW_MS) viewGame.phase='roundIntro'; mySubmitted=!!m.state.mySubmitted; renderBattle(); }
+    else if(m.type==='submitCard'&&role==='host'){ const ok=hostSubmit('guest', m.card, m.round); if(!ok) broadcastState(); }
+    else if(m.type==='battleReady'&&role==='host'){ const ok=markBattleReady('guest', m.round); if(!ok) broadcastState(); }
     else if(m.type==='rematch'&&role==='host'){ startHostGame(); }
   }
   let remoteReady=false,clockOffset=0,clockSamples=0,bestClockRtt=Infinity;
@@ -1182,7 +1149,7 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
     },Math.max(0,state.deadline-DRAW_MS-gameNow()));
   }
 
-  function newSide(name){ return {name,shield:0,nextBoost:0,nextWeaken:0,wins:0,supportUsed:0,submitted:null,survivor:null,reflect:0,battleReady:false}; }
+  function newSide(name){ return {name,hp:MAX_HP,shield:0,wins:0,supportUsed:0,submitted:null,survivor:null,reflect:0,battleReady:false}; }
   function chooseEvent(){
     // 神イベントはレア。約78%のラウンドは何も起きない。
     if(Math.random() < 0.78) return EVENTS[0];
@@ -1198,29 +1165,94 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
     remoteReady=false; clockOffset=0; clockSamples=0; bestClockRtt=Infinity; scheduledStart=null;
     lastFxKey=''; lastGodEventKey=''; aiVisual=null; aiRoundToken=''; authGame={round:1,phase:'waiting',startAt:null,over:false,deadline:null,fieldEvent:chooseEvent(),host:newSide('ホスト'),guest:newSide('ゲスト'),logs:['★ 接続完了。ホストのGAME STARTを待っています。'],lastClash:null,winner:null,announce:null};
     if(authGame.fieldEvent.id!=='calm') authGame.logs.unshift(`★ 神イベント発生：「${authGame.fieldEvent.name}」 ${authGame.fieldEvent.desc}`);
-    mySubmitted=false; earlyFinished=false; clearCanvas(); setSelectedType('monster'); setBgmMood('draw'); broadcastState();
+    mySubmitted=false; earlyFinished=false; localRoundSeen=null; aiAnalyzing=false; clearCanvas(); setSelectedType('monster'); setBgmMood('draw'); broadcastState();
   }
   function cloneCard(card){ return card ? JSON.parse(JSON.stringify(card)) : null; }
-  function hostSubmit(who, card){
-    if(!authGame||authGame.over||!['draw','naming'].includes(authGame.phase)) return;
+  function finiteNum(v,fallback=0,min=0,max=999){ const n=Number(v); return Number.isFinite(n)?clamp(n,min,max):fallback; }
+  function sanitizeSubmittedCard(card, side){
+    if(!card || typeof card!=='object') return null;
+    const accepted=cloneCard(card);
+    if(!['monster','support'].includes(accepted.kind)) return null;
+    accepted.name=String(accepted.name||'名もなきカード').slice(0,80);
+    accepted.score=Math.round(finiteNum(accepted.score,0,0,100));
+    accepted.image=typeof accepted.image==='string' ? accepted.image : '';
+    accepted.desc=String(accepted.desc||'').slice(0,240);
+    accepted.nameInfo=(accepted.nameInfo&&typeof accepted.nameInfo==='object')?accepted.nameInfo:{};
+    accepted.rarity=['COMMON','RARE','EPIC','LEGEND'].includes(accepted.rarity)?accepted.rarity:'COMMON';
+    if(accepted.kind==='support'){
+      if(side.supportUsed>=SUPPORT_LIMIT) return null;
+      const roles=['boost','barrier','heal','curse','focus','mirror','miracle','chaos'];
+      accepted.role=roles.includes(accepted.role)?accepted.role:'boost';
+      accepted.power=Math.round(finiteNum(accepted.power,1,1,60));
+      delete accepted.stats;
+      return accepted;
+    }
+    const roles=['attack','defend','heal','chaos'];
+    const elements=['fire','water','thunder','wind','earth','light','dark','shadow','neutral'];
+    accepted.role=roles.includes(accepted.role)?accepted.role:'attack';
+    accepted.element=elements.includes(accepted.element)?accepted.element:'neutral';
+    const st=(accepted.stats&&typeof accepted.stats==='object')?accepted.stats:{};
+    accepted.stats={
+      atk:Math.round(finiteNum(st.atk,1,0,99)),
+      shield:Math.round(finiteNum(st.shield,0,0,99)),
+      heal:Math.round(finiteNum(st.heal,0,0,99))
+    };
+    delete accepted.power;
+    return accepted;
+  }
+  function hostSubmit(who, card, expectedRound=null){
+    if(!authGame || authGame.over || !['draw','naming'].includes(authGame.phase)) return false;
+    if(expectedRound!=null && Number(expectedRound)!==authGame.round) return false;
     const side=authGame[who];
-    if(side.submitted) return;
-    if(card.kind==='support' && side.supportUsed>=SUPPORT_LIMIT) card.kind='monster';
-    if(card.kind==='support') side.supportUsed += 1;
-    side.submitted = cloneCard(card);
+    if(!side || side.submitted) return false;
+    const accepted=sanitizeSubmittedCard(card,side);
+    if(!accepted){
+      authGame.logs.unshift(`⚠ ${side?.name||'プレイヤー'}の提出データを受理できませんでした。状態を再同期します。`);
+      broadcastState();
+      return false;
+    }
+    if(accepted.kind==='support') side.supportUsed += 1;
+    side.submitted = accepted;
     authGame.logs.unshift(`★ ${side.name}がカードを提出した。`);
     if(authGame.host.submitted && authGame.guest.submitted) beginCardShowcase(); else broadcastState();
+    return true;
   }
 
+  function damage(side, n, opts={}){
+    let blocked=0, actual=n;
+    if(!opts.pierce){ blocked=Math.min(side.shield,n); side.shield -= blocked; actual=n-blocked; }
+    side.hp=Math.max(0,side.hp-actual);
+    if(blocked) authGame.logs.unshift(`${side.name}は${blocked}ダメージ防いだ。`);
+    authGame.logs.unshift(`${side.name}に${actual}ダメージ！${opts.pierce?'（貫通）':''}`);
+    if(side.reflect && actual>0 && opts.source){
+      const bounce = Math.min(actual, side.reflect);
+      side.reflect = Math.max(0, side.reflect - bounce);
+      opts.source.hp = Math.max(0, opts.source.hp - bounce);
+      authGame.logs.unshift(`${side.name}の反射で${opts.source.name}も${bounce}ダメージ！`);
+    }
+    return actual;
+  }
+  function heal(side, n){ const before=side.hp; side.hp=Math.min(MAX_HP,side.hp+n); const actual=side.hp-before; authGame.logs.unshift(`${side.name}は${actual}回復。`); return actual; }
+
   function eventApplyRoundStart(){
-    const {host:h,guest:g,fieldEvent:ev}=authGame;
-    if(ev.id==='meteor'){h.nextWeaken+=2;g.nextWeaken+=2;}
-    if(ev.id==='chaos'){h.nextBoost+=Math.floor(Math.random()*5);g.nextBoost+=Math.floor(Math.random()*5);}
-    if(ev.id==='blessing'){h.nextBoost+=3;g.nextBoost+=3;}
-    if(ev.id==='armorbreak'){h.shield=Math.floor(h.shield/2);g.shield=Math.floor(g.shield/2);}
-    if(ev.id==='reversal' && h.wins!==g.wins){
-      const low=h.wins<g.wins?h:g;const bonus=2+Math.abs(h.wins-g.wins)*2;
-      low.nextBoost+=bonus;authGame.logs.unshift('★ 逆転の天秤：'+low.name+'の次のモンスター戦 +'+bonus);
+    const ev = authGame.fieldEvent;
+    if(!ev) return;
+    if(ev.id==='meteor'){ damage(authGame.host,5); damage(authGame.guest,5); }
+    else if(ev.id==='blessing'){ heal(authGame.host,7); heal(authGame.guest,7); }
+    else if(ev.id==='armorbreak'){
+      authGame.host.shield = Math.floor(authGame.host.shield/2);
+      authGame.guest.shield = Math.floor(authGame.guest.shield/2);
+      authGame.logs.unshift('★ 審判の風が吹き、防御値が半減した。');
+    }else if(ev.id==='reversal'){
+      const h=authGame.host, g=authGame.guest;
+      if(h.hp!==g.hp){
+        const low=h.hp<g.hp?h:g, high=h.hp<g.hp?g:h;
+        const gap=high.hp-low.hp;
+        const recovery=gap>=30?18:gap>=15?13:9;
+        const shield=gap>=30?10:gap>=15?7:5;
+        heal(low,recovery); low.shield+=shield;
+        authGame.logs.unshift(`★ 逆転の天秤！ 劣勢の${low.name}がHP${recovery}回復＋防御${shield}を得た。`);
+      }else authGame.logs.unshift('★ 逆転の天秤は均衡を見届け、静かに消えた。');
     }
   }
 
@@ -1245,7 +1277,23 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
     return base;
   }
 
+  function miracleRoll(me, op, power){
+    const type = randPick(['heal','blast','shield','swap']);
+    if(type==='heal'){ heal(me, power+3); authGame.logs.unshift('奇跡！ 大きく回復した。'); return {dealt:0,healed:power+3,shielded:0}; }
+    if(type==='blast'){ const d = damage(op, power+4, {source:me}); authGame.logs.unshift('奇跡！ 天罰が降り注いだ。'); return {dealt:d,healed:0,shielded:0}; }
+    if(type==='shield'){ me.shield += power+3; authGame.logs.unshift(`奇跡！ ${me.name}は防御を${power+3}得た。`); return {dealt:0,healed:0,shielded:power+3}; }
+    const swap = Math.min(10, power+2, op.hp);
+    op.hp -= swap; me.hp = Math.min(MAX_HP, me.hp + swap);
+    authGame.logs.unshift(`奇跡！ ${swap}の生命力を奪った。`);
+    return {dealt:swap,healed:swap,shielded:0};
+  }
 
+  function applyChaosTouch(me, op){
+    const touch = randPick(['spike','heal','curse']);
+    if(touch==='spike'){ damage(op,2,{source:me}); authGame.logs.unshift('混沌が追加で牙をむいた。'); }
+    else if(touch==='heal'){ heal(me,2); authGame.logs.unshift('混沌がわずかな癒やしを与えた。'); }
+    else { if(op.shield>0){ const broke=Math.min(2,op.shield); op.shield-=broke; authGame.logs.unshift(`混沌が相手の防御を${broke}削った。`);} }
+  }
 
   function buildMonsterClashPower(card, me, oppCard){
     const info=card.nameInfo||{};
@@ -1253,12 +1301,14 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
     let power=card.stats.atk;
     effects.push({icon:'⚔️',kind:'',text:`${me.name} 基礎攻撃力 ${power}`});
 
-    if(card.stats.shield>0){
+    if(card.role==='defend' && card.stats.shield>0){
       const bonus=Math.max(1,Math.round(card.stats.shield*0.55));
       power+=bonus;
       effects.push({icon:'🛡️',kind:'good',text:`防御型特性：攻撃力 +${bonus}`});
-    }
-    if(card.role==='chaos'){
+    }else if(card.role==='heal' && card.stats.heal>0){
+      const recovered=heal(me,Math.max(1,Math.floor(card.stats.heal/2)));
+      effects.push({icon:'💚',kind:'good',text:`回復型特性：バトル前にHP ${recovered}回復`});
+    }else if(card.role==='chaos'){
       const chaos=randPick([-3,0,3,6]);
       power=Math.max(0,power+chaos);
       effects.push({icon:'🌀',kind:chaos>=0?'good':'bad',text:`カオス補正：攻撃力 ${chaos>=0?'+':''}${chaos}`});
@@ -1293,36 +1343,67 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
     else if(fate<0.024){ power=0; effects.push({icon:'☠️',kind:'bad',text:'神の悪戯：攻撃力が0になった！'}); }
     else if(fate<0.040){ power+=5; effects.push({icon:'✨',kind:'good',text:'突然の加護：攻撃力 +5'}); }
 
-    const bonus=(me.nextBoost||0)+(me.shield||0)-(me.nextWeaken||0);
-    if(bonus)effects.push({icon:'✨',kind:bonus>0?'good':'bad',text:'次戦効果：戦闘力 '+(bonus>0?'+':'')+bonus});
-    power+=bonus;
-    if(authGame.fieldEvent?.id==='double'){power*=2;effects.push({icon:'⚔️',kind:'attr',text:'双撃の祭壇：戦闘力2倍'});}
-    me.nextBoost=0;me.nextWeaken=0;me.shield=0;
     return {power:Math.max(0,Math.round(power)),effects};
   }
 
-  function useSupport(card,me,op){
-    let type=card.role;
-    if(type==='chaos'||type==='miracle')type=randPick(['boost','barrier','heal','curse','focus','mirror']);
-    const gap=Math.max(0,op.wins-me.wins);
-    const p=Math.max(3,Math.round(card.power*(1+gap*.2)));
-    const result={boost:0,weaken:0,shield:0};
-    if(type==='curse')result.weaken=p;
-    else if(type==='barrier')result.shield=p;
-    else if(type==='focus'||type==='mirror'){result.boost=Math.ceil(p/2);result.weaken=Math.ceil(p/2);}
-    else result.boost=p;
-    if(authGame.fieldEvent?.id==='mirror'){result.boost=Math.ceil(result.boost*1.5);result.shield=Math.ceil(result.shield*1.5);}
-    me.nextBoost+=result.boost;me.shield+=result.shield;op.nextWeaken+=result.weaken;
-    authGame.logs.unshift('★ '+me.name+'のサポート発動。次のモンスター戦に効果を保存。勝利数の加算なし。');
-    return result;
+  function useSupport(card, me, op){
+    authGame.logs.unshift(`★ ${me.name}の切り札サポート「${card.name}」発動！`);
+    const info=card.nameInfo||{}; let dealt=0, healed=0, shielded=0; let type=card.role;
+    if(type==='chaos'){ type=randPick(['boost','barrier','heal','curse','focus','mirror','miracle']); authGame.logs.unshift(`🌀 混沌の切り札が「${type}」として発動！`); }
+
+    // 1試合1枚限定の最終切り札。通常値を大きく増幅し、劣勢時はさらに逆転補正。
+    const hpGap = op.hp - me.hp;
+    const comeback = hpGap >= 35 ? 1.75 : hpGap >= 20 ? 1.45 : hpGap >= 10 ? 1.22 : 1;
+    let p = Math.max(8, Math.round((card.power * 2.15 + 7) * comeback));
+    if(comeback>1){ authGame.logs.unshift(`🔥 逆転補正！ HP差${hpGap}によりサポート威力 x${comeback.toFixed(2)}！`); }
+
+    // サポート自体の事故はかなり低確率。切り札感を優先。
+    const miracle=Math.random();
+    if(miracle<0.05){ p=Math.round(p*1.5); authGame.logs.unshift('🌟 超越発動！ サポート効果1.5倍！'); }
+    else if(miracle>0.985){ p=Math.max(1,Math.round(p*0.6)); authGame.logs.unshift('💥 神力が乱れた！ 効果が少し弱まった。'); }
+
+    if(type==='boost'){
+      dealt=damage(op,p + (info.attackBoost||0)*2,{pierce:true,source:me});
+      authGame.logs.unshift('💥 切り札攻撃は防御を貫通！');
+    }else if(type==='barrier'){
+      shielded=p + (info.shieldBoost||0)*3; me.shield += shielded;
+      authGame.logs.unshift(`🛡️ ${me.name}は巨大防御${shielded}を得た。`);
+    }else if(type==='heal'){
+      healed=heal(me,p + (info.healBoost||0)*3);
+      if(me.hp<=35){ const bonus=Math.min(8,MAX_HP-me.hp); if(bonus>0){healed+=heal(me,bonus);authGame.logs.unshift('💚 瀕死ボーナスで追加回復！');} }
+    }else if(type==='curse'){
+      dealt=damage(op,Math.max(8,Math.round(p*0.72)),{source:me});
+      const broke=op.shield; op.shield=0;
+      authGame.logs.unshift(`☠️ 呪詛が相手の防御${broke}をすべて破壊！`);
+    }else if(type==='focus'){
+      dealt=damage(op,Math.max(7,Math.round(p*0.58)),{source:me});
+      shielded=Math.max(8,Math.round(p*0.58)); me.shield += shielded;
+      authGame.logs.unshift(`🎯 攻防一体！ 防御${shielded}を獲得。`);
+    }else if(type==='mirror'){
+      shielded=Math.max(10,Math.round(p*0.55)); me.shield += shielded;
+      me.reflect=(me.reflect||0)+Math.max(12,Math.round(p*0.8));
+      authGame.logs.unshift(`🪞 反射障壁！ 防御${shielded}＋次回最大${Math.max(12,Math.round(p*0.8))}反射。`);
+    }else if(type==='miracle'){
+      const r=miracleRoll(me,op,Math.max(10,Math.round(p*0.8)));
+      dealt+=r.dealt||0; healed+=r.healed||0; shielded+=r.shielded||0;
+    }
+
+    if(authGame.fieldEvent?.id==='mirror' && (healed>0||shielded>0)){
+      const extraHeal=Math.floor(healed*0.5), extraShield=Math.floor(shielded*0.5);
+      if(extraHeal>0){ healed+=heal(me,extraHeal); authGame.logs.unshift(`🌌 反響の間：追加でHP${extraHeal}回復。`); }
+      if(extraShield>0){ me.shield+=extraShield; shielded+=extraShield; authGame.logs.unshift(`🌌 反響の間：追加で防御${extraShield}。`); }
+    }
+    if(info.drain && dealt>0){ const siphon=Math.max(2,Math.floor(dealt/2)); healed += heal(me,siphon); authGame.logs.unshift(`🩸 吸収特性でHP${siphon}回復。`); }
+    return {dealt,healed,shielded};
   }
-  function supportDetail(card,result,ownerLabel){
-    return [{icon:'✨',kind:'good',text:ownerLabel+'：次のモンスター戦で強化 +'+result.boost+' / 防御加算 +'+result.shield+' / 相手弱体 -'+result.weaken}];
-  }
-  function describeCard(card){
-    if(card.kind==='monster')return '攻撃・防御・属性から最終戦闘力を計算。高い側が1勝、同点はDRAW。';
-    const descriptions={boost:'次のモンスター戦で自分の戦闘力を強化。',heal:'加護：次のモンスター戦で自分の戦闘力を強化。',barrier:'次のモンスター戦で防御を戦闘力に加算。',curse:'相手の次のモンスター戦の戦闘力を弱体化。',focus:'次のモンスター戦で自分を強化し、相手を弱体化。',mirror:'次のモンスター戦で自分を強化し、相手を弱体化。',miracle:'強化・防御・弱体化のいずれかを次戦へ付与。',chaos:'強化・防御・弱体化のいずれかを次戦へ付与。'};
-    return (descriptions[card.role]||descriptions.boost)+' 勝利数で劣勢なら効果増幅。使用ラウンドは勝利数加算なし。';
+
+  function supportDetail(card, result, ownerLabel){
+    const rows=[];
+    rows.push({icon:'✨',kind:'',text:`${ownerLabel}「${card.name}」：${card.desc}`});
+    if(result.dealt>0) rows.push({icon:'💥',kind:'bad',text:`${ownerLabel}が ${result.dealt} ダメージを与えた`});
+    if(result.healed>0) rows.push({icon:'💚',kind:'good',text:`${ownerLabel}が HP ${result.healed} 回復`});
+    if(result.shielded>0) rows.push({icon:'🛡️',kind:'good',text:`${ownerLabel}が 防御 ${result.shielded} 獲得`});
+    return rows;
   }
 
   function beginCardShowcase(){
@@ -1336,20 +1417,22 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
     broadcastState();
   }
 
-  function markBattleReady(who){
-    if(!authGame || authGame.over || authGame.phase!=='reveal') return;
+  function markBattleReady(who, expectedRound=null){
+    if(!authGame || authGame.over || authGame.phase!=='reveal') return false;
+    if(expectedRound!=null && Number(expectedRound)!==authGame.round) return false;
     const side=authGame[who];
-    if(side.battleReady) return;
+    if(!side || side.battleReady) return false;
     side.battleReady=true;
     authGame.logs.unshift(`★ ${side.name}：BATTLE READY！`);
     if(authGame.host.battleReady && authGame.guest.battleReady) startBattleSequence();
     else broadcastState();
+    return true;
   }
 
   function requestBattleReady(){
     if(!viewGame || viewGame.over || viewGame.phase!=='reveal' || viewGame.myBattleReady) return;
-    if(role==='host') markBattleReady('host');
-    else send({type:'battleReady'});
+    if(role==='host') markBattleReady('host', viewGame.round);
+    else send({type:'battleReady',round:viewGame.round});
   }
   $('battleReadyBtn').onclick=requestBattleReady;
 
@@ -1376,27 +1459,94 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
   }
 
   function resolveRound(){
-    authGame.phase='battle';
+    if(!authGame || authGame.over || !['battleIntro','battle'].includes(authGame.phase)) return;
     const h=authGame.host.submitted, g=authGame.guest.submitted;
+    if(!h || !g){
+      authGame.logs.unshift('⚠ カード状態の不整合を検出。ラウンドを安全に再同期しました。');
+      authGame.phase='draw'; authGame.startAt=null; authGame.deadline=Date.now()+DRAW_MS;
+      authGame.host.battleReady=false; authGame.guest.battleReady=false;
+      authGame.host.submitted=authGame.host.survivor?cloneCard(authGame.host.survivor):null;
+      authGame.guest.submitted=authGame.guest.survivor?cloneCard(authGame.guest.survivor):null;
+      broadcastState();
+      return;
+    }
+    authGame.phase='battle';
     authGame.logs.unshift(`★ ROUND ${authGame.round}：${h.name} VS ${g.name}`);
     authGame.logs.unshift(`★ 神イベント：「${authGame.fieldEvent.name}」`);
     authGame.host.reflect = 0; authGame.guest.reflect = 0;
     eventApplyRoundStart();
-    let roundWinner=null;
+    const hpBeforeHost=authGame.host.hp, hpBeforeGuest=authGame.guest.hp;
+    let hostScore=0, guestScore=0;
+    authGame.battleDetails=null;
+
     if(h.kind==='monster' && g.kind==='monster'){
-      announce('DIVINE CLASH','hit');setBgmMood('battle');sfx('clash');
-      const hb=buildMonsterClashPower(h,authGame.host,g),gb=buildMonsterClashPower(g,authGame.guest,h);
-      roundWinner=hb.power===gb.power?null:hb.power>gb.power?'host':'guest';
-      authGame.battleDetails={type:'monsterClash',hostPower:hb.power,guestPower:gb.power,diff:Math.abs(hb.power-gb.power),winner:roundWinner||'draw',hostEffects:hb.effects,guestEffects:gb.effects};
-      authGame.logs.unshift('★ 最終戦闘力 '+hb.power+' 対 '+gb.power+'。'+(roundWinner?'勝者に1勝。':'DRAW：勝利数加算なし。'));
-    }else{
-      announce('SUPPORT','event');sfx('support');
-      const hostEffects=h.kind==='support'?supportDetail(h,useSupport(h,authGame.host,authGame.guest),'ホスト'):[];
-      const guestEffects=g.kind==='support'?supportDetail(g,useSupport(g,authGame.guest,authGame.host),'ゲスト'):[];
-      authGame.battleDetails={type:'support',hostEffects,guestEffects};
+      authGame.logs.unshift('★ モンスター同士のバトル！ 最終攻撃力の差が敗者へのHPダメージになる。');
+      announce('DIVINE CLASH','hit'); setBgmMood('battle'); sfx('clash');
+      const hb=buildMonsterClashPower(h,authGame.host,g);
+      const gb=buildMonsterClashPower(g,authGame.guest,h);
+      const rawDiff=Math.abs(hb.power-gb.power);
+      let clashWinner='draw', finalDamage=0, defenseUsed=0, barrierUsed=0;
+      if(hb.power>gb.power){
+        clashWinner='host';
+        const monsterDef=Math.max(0,g.stats?.shield||0);
+        const afterMonsterDef=Math.max(0,rawDiff-monsterDef);
+        barrierUsed=Math.min(authGame.guest.shield,afterMonsterDef);
+        authGame.guest.shield-=barrierUsed;
+        finalDamage=Math.max(0,afterMonsterDef-barrierUsed);
+        defenseUsed=Math.min(rawDiff,monsterDef);
+        authGame.guest.hp=Math.max(0,authGame.guest.hp-finalDamage);
+        gb.effects.push({icon:'🛡️',kind:'good',text:`防御力 ${monsterDef}：攻撃力差 ${rawDiff} → ${afterMonsterDef}`});
+        if(barrierUsed>0) gb.effects.push({icon:'🔰',kind:'good',text:`追加バリア ${barrierUsed} 消費：${afterMonsterDef} → ${finalDamage}`});
+        authGame.logs.unshift(`★ ${hb.power} - ${gb.power} = ${rawDiff}。敗者DEF ${monsterDef}${barrierUsed?` + バリア${barrierUsed}`:''}を差し引き、最終${finalDamage}ダメージ！ ホスト勝利。ホストはノーダメージ。`);
+        hostScore=finalDamage; guestScore=0;
+        authGame.host.survivor=cloneCard(h); authGame.guest.survivor=null;
+      }else if(gb.power>hb.power){
+        clashWinner='guest';
+        const monsterDef=Math.max(0,h.stats?.shield||0);
+        const afterMonsterDef=Math.max(0,rawDiff-monsterDef);
+        barrierUsed=Math.min(authGame.host.shield,afterMonsterDef);
+        authGame.host.shield-=barrierUsed;
+        finalDamage=Math.max(0,afterMonsterDef-barrierUsed);
+        defenseUsed=Math.min(rawDiff,monsterDef);
+        authGame.host.hp=Math.max(0,authGame.host.hp-finalDamage);
+        hb.effects.push({icon:'🛡️',kind:'good',text:`防御力 ${monsterDef}：攻撃力差 ${rawDiff} → ${afterMonsterDef}`});
+        if(barrierUsed>0) hb.effects.push({icon:'🔰',kind:'good',text:`追加バリア ${barrierUsed} 消費：${afterMonsterDef} → ${finalDamage}`});
+        authGame.logs.unshift(`★ ${gb.power} - ${hb.power} = ${rawDiff}。敗者DEF ${monsterDef}${barrierUsed?` + バリア${barrierUsed}`:''}を差し引き、最終${finalDamage}ダメージ！ ゲスト勝利。ゲストはノーダメージ。`);
+        guestScore=finalDamage; hostScore=0;
+        authGame.guest.survivor=cloneCard(g); authGame.host.survivor=null;
+      }else{
+        authGame.host.survivor=null; authGame.guest.survivor=null;
+        authGame.logs.unshift(`★ 最終攻撃力 ${hb.power} 対 ${gb.power}。完全互角！ 両者相打ち扱いでカードは消滅。HPダメージなし。`);
+      }
+      authGame.battleDetails={type:'monsterClash',hostPower:hb.power,guestPower:gb.power,diff:rawDiff,finalDamage,defenseUsed,barrierUsed,winner:clashWinner,hostEffects:hb.effects,guestEffects:gb.effects};
+    } else if(h.kind==='support' && g.kind==='monster'){
+      authGame.logs.unshift('★ サポート vs モンスター。バトルは起こらず、サポート効果のみ発動。');
+      announce('SUPPORT','event'); sfx('support'); sfx('support');
+      authGame.host.survivor=null; authGame.guest.survivor=cloneCard(g);
+      const hs=useSupport(h,authGame.host,authGame.guest);
+      hostScore = (hpBeforeGuest-authGame.guest.hp) + hs.healed + hs.shielded*0.5;
+      guestScore = 0;
+      authGame.battleDetails={type:'support',hostEffects:supportDetail(h,hs,'ホスト'),guestEffects:[{icon:'🚫',kind:'attr',text:'ゲストのモンスターはこのラウンド攻撃しない'}]};
+    } else if(h.kind==='monster' && g.kind==='support'){
+      authGame.logs.unshift('★ モンスター vs サポート。バトルは起こらず、サポート効果のみ発動。');
+      announce('SUPPORT','event');
+      authGame.host.survivor=cloneCard(h); authGame.guest.survivor=null;
+      const gs=useSupport(g,authGame.guest,authGame.host);
+      guestScore = (hpBeforeHost-authGame.host.hp) + gs.healed + gs.shielded*0.5;
+      hostScore = 0;
+      authGame.battleDetails={type:'support',hostEffects:[{icon:'🚫',kind:'attr',text:'ホストのモンスターはこのラウンド攻撃しない'}],guestEffects:supportDetail(g,gs,'ゲスト')};
+    } else {
+      authGame.logs.unshift('★ サポート同士。お互いの効果だけが発動。');
+      authGame.host.survivor=null; authGame.guest.survivor=null;
+      announce('DUAL SUPPORT','event'); sfx('support');
+      const hs=useSupport(h,authGame.host,authGame.guest);
+      const gs=useSupport(g,authGame.guest,authGame.host);
+      hostScore = (hpBeforeGuest-authGame.guest.hp) + hs.healed + hs.shielded*0.5;
+      guestScore = (hpBeforeHost-authGame.host.hp) + gs.healed + gs.shielded*0.5;
+      authGame.battleDetails={type:'support',hostEffects:supportDetail(h,hs,'ホスト'),guestEffects:supportDetail(g,gs,'ゲスト')};
     }
 
-
+    const roundWinner = authGame.battleDetails?.type==='monsterClash' ? (authGame.battleDetails.winner==='draw' ? null : authGame.battleDetails.winner) : (hostScore===guestScore ? null : hostScore>guestScore ? 'host' : 'guest');
 
     // 次ラウンドへ残れるのは「ラウンド勝者のモンスター」だけ。
     // 敗者カードは必ず消滅させる。これにより、サポートvsモンスター等で
@@ -1429,9 +1579,9 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
       authGame.logs.unshift(`★ 先に${WIN_TARGET}勝達成！ ${authGame.winner}`); authGame.announce = { text: authGame.winner, cls:'win' }; broadcastState(); return;
     }
     authGame.phase='roundEnd'; authGame.announce = { text:'ROUND '+authGame.round+' COMPLETE', cls:'event' }; authGame.logs.unshift(`★ ROUND ${authGame.round} 終了。結果を確認しよう。`); broadcastState();
-    const finishedRound = authGame.round, finishedGame=authGame;
+    const finishedRound = authGame.round;
     setTimeout(()=>{
-      if(authGame!==finishedGame || !authGame || authGame.over || authGame.phase!=='roundEnd' || authGame.round!==finishedRound) return;
+      if(!authGame || authGame.over || authGame.phase!=='roundEnd' || authGame.round!==finishedRound) return;
       authGame.phase='cardVanish'; authGame.announce = { text:'DEFEATED CARD DESTROYED', cls:'event' };
       const survivors=[];
       if(authGame.host.survivor) survivors.push(`ホスト「${authGame.host.survivor.name}」`);
@@ -1439,43 +1589,39 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
       authGame.logs.unshift(survivors.length ? `★ 敗北・使用済みカードが消滅。${survivors.join(' / ')} は生存し次ラウンドへ続投！` : '★ このラウンドのカードは消滅する。');
       broadcastState();
       setTimeout(()=>{
-        if(authGame!==finishedGame || !authGame || authGame.over || authGame.phase!=='cardVanish' || authGame.round!==finishedRound) return;
-        authGame.round += 1; authGame.phase='draw'; aiVisual=null; aiRoundToken=''; authGame.deadline=Date.now()+DRAW_MS;
-        for(const side of [authGame.host,authGame.guest]){
-          if(side.survivor?.kind!=='monster')side.survivor=null;
-          side.submitted=cloneCard(side.survivor);
-        }
+        if(!authGame || authGame.over || authGame.phase!=='cardVanish' || authGame.round!==finishedRound) return;
+        if(authGame.host.hp<=0){authGame.host.hp=MAX_HP;authGame.host.shield=0;authGame.logs.unshift('✦ ホストは次の勝負に備えてHP100で復活した。');}
+        if(authGame.guest.hp<=0){authGame.guest.hp=MAX_HP;authGame.guest.shield=0;authGame.logs.unshift('✦ ゲストは次の勝負に備えてHP100で復活した。');}
+        authGame.round += 1; authGame.phase='draw'; authGame.startAt=null; aiVisual=null; aiRoundToken=''; authGame.deadline=Date.now()+DRAW_MS;
+        authGame.host.submitted=authGame.host.survivor?cloneCard(authGame.host.survivor):null;
+        authGame.guest.submitted=authGame.guest.survivor?cloneCard(authGame.guest.survivor):null;
         authGame.host.battleReady=false; authGame.guest.battleReady=false; authGame.lastClash=null; authGame.fieldEvent = chooseEvent();
-        if(authGame.host.submitted && authGame.guest.submitted) beginCardShowcase();
-        if(gameMode==='cpu' && authGame.host.submitted && !authGame.guest.submitted){
-          const game=authGame, round=game.round;
-          setTimeout(()=>{if(authGame===game && game.round===round && game.phase==='draw') hostSubmit('guest',makeCpuCard());},700);
-        }
+        if(authGame.host.submitted && authGame.guest.submitted){ authGame.phase='reveal'; authGame.host.battleReady=false; authGame.guest.battleReady=(gameMode==='cpu'); }
         authGame.logs.unshift(`★ ROUND ${authGame.round} 開始。${authGame.host.submitted||authGame.guest.submitted?'生き残ったモンスターが盤面に残っている。倒された側だけ新しいカードを描こう。':'新しいカードを描こう。'}`);
         if(authGame.fieldEvent.id!=='calm') authGame.logs.unshift(`★ 神イベント発生：「${authGame.fieldEvent.name}」 ${authGame.fieldEvent.desc}`); authGame.announce = { text:'ROUND '+authGame.round, cls:'event' }; setBgmMood('draw'); sfx('round'); broadcastState();
+        // CPUが敗者で、プレイヤーの生存モンスターだけが残った場合、
+        // プレイヤーは新規提出しないため cpuPlayerSubmit() が呼ばれない。CPU側を自動提出させる。
+        if(gameMode==='cpu' && authGame.phase==='draw' && authGame.host.submitted && !authGame.guest.submitted){
+          const cpuRound=authGame.round;
+          setTimeout(()=>{
+            if(gameMode==='cpu' && authGame && !authGame.over && authGame.round===cpuRound && ['draw','naming'].includes(authGame.phase) && authGame.host.submitted && !authGame.guest.submitted){
+              hostSubmit('guest',makeCpuCard(),cpuRound);
+            }
+          },450);
+        }
       }, 2200);
     }, 8000);
   }
 
   function publicStateFor(who){
     const me = authGame[who], opp = who==='host' ? authGame.guest : authGame.host;
-    return { round:authGame.round, startAt:authGame.startAt, phase:authGame.phase, over:authGame.over, winner:authGame.winner, deadline:authGame.deadline, fieldEvent:authGame.fieldEvent, announce: authGame.announce, announceToken: `${authGame.round}-${authGame.phase}-${authGame.announce?.text || ''}`, my:{shield:me.shield,nextBoost:me.nextBoost,nextWeaken:me.nextWeaken,wins:me.wins||0,supportUsed:me.supportUsed,hasSurvivor:!!me.survivor}, opp:{shield:opp.shield,nextBoost:opp.nextBoost,nextWeaken:opp.nextWeaken,wins:opp.wins||0,supportUsed:opp.supportUsed,hasSurvivor:!!opp.survivor}, mySubmitted:!!me.submitted, oppSubmitted:!!opp.submitted, myBattleReady:!!me.battleReady, oppBattleReady:!!opp.battleReady, myCard:cloneCard(me.submitted), oppCard:['reveal','standby','battleIntro','battle','roundEnd','cardVanish','over'].includes(authGame.phase)?cloneCard(opp.submitted):null, lastClash:authGame.lastClash ? {round:authGame.lastClash.round, me:cloneCard(who==='host'?authGame.lastClash.host:authGame.lastClash.guest), opp:cloneCard(who==='host'?authGame.lastClash.guest:authGame.lastClash.host), result:authGame.lastClash.result, fieldEvent: authGame.lastClash.fieldEvent, battleDetails: authGame.lastClash.battleDetails ? (who==='host' ? authGame.lastClash.battleDetails : (()=>{const d=JSON.parse(JSON.stringify(authGame.lastClash.battleDetails)); if(d.type==='monsterClash'){[d.hostPower,d.guestPower]=[d.guestPower,d.hostPower]; d.winner=d.winner==='host'?'guest':d.winner==='guest'?'host':'draw';} [d.hostEffects,d.guestEffects]=[d.guestEffects,d.hostEffects]; return d;})()) : null} : null, logs:[...authGame.logs] };
+    return { round:authGame.round, startAt:authGame.startAt, phase:authGame.phase, over:authGame.over, winner:authGame.winner, deadline:authGame.deadline, fieldEvent:authGame.fieldEvent, announce: authGame.announce, announceToken: `${authGame.round}-${authGame.phase}-${authGame.announce?.text || ''}`, my:{hp:me.hp,shield:me.shield,wins:me.wins||0,supportUsed:me.supportUsed,hasSurvivor:!!me.survivor}, opp:{hp:opp.hp,shield:opp.shield,wins:opp.wins||0,supportUsed:opp.supportUsed,hasSurvivor:!!opp.survivor}, mySubmitted:!!me.submitted, oppSubmitted:!!opp.submitted, myBattleReady:!!me.battleReady, oppBattleReady:!!opp.battleReady, myCard:cloneCard(me.submitted), oppCard:['reveal','standby','battleIntro','battle','roundEnd','cardVanish','over'].includes(authGame.phase)?cloneCard(opp.submitted):null, lastClash:authGame.lastClash ? {round:authGame.lastClash.round, me:cloneCard(who==='host'?authGame.lastClash.host:authGame.lastClash.guest), opp:cloneCard(who==='host'?authGame.lastClash.guest:authGame.lastClash.host), result:authGame.lastClash.result, fieldEvent: authGame.lastClash.fieldEvent, battleDetails: authGame.lastClash.battleDetails ? (who==='host' ? authGame.lastClash.battleDetails : (()=>{const d=JSON.parse(JSON.stringify(authGame.lastClash.battleDetails)); if(d.type==='monsterClash'){[d.hostPower,d.guestPower]=[d.guestPower,d.hostPower]; d.winner=d.winner==='host'?'guest':d.winner==='guest'?'host':'draw';} [d.hostEffects,d.guestEffects]=[d.guestEffects,d.hostEffects]; return d;})()) : null} : null, logs:[...authGame.logs] };
   }
   function broadcastState(){ if(!authGame) return; viewGame=publicStateFor('host'); mySubmitted=!!viewGame.mySubmitted; if(gameMode==='online') send({type:'state',state:publicStateFor('guest')}); renderBattle(); }
 
   function stopLocalTimer(){ if(timerInterval){ clearInterval(timerInterval); timerInterval=null; } }
   function startLocalTimer(){ stopLocalTimer(); timerInterval=setInterval(updateTimer,200); updateTimer(); }
-  function updateDrawCountdown(){
-    const active=!!viewGame && !viewGame.over && viewGame.phase==='draw' && !mySubmitted && !earlyFinished;
-    $('drawCountdown').hidden=!active;
-    if(!active)return;
-    const sec=Math.ceil(Math.max(0,(viewGame.deadline||gameNow())-gameNow())/1000);
-    $('drawSeconds').textContent=sec+'秒';
-    $('drawCountdown').classList.toggle('danger',sec<=10);
-    $('drawCountdownLabel').textContent=sec<=10?'あと少し！':'残り時間';
-  }
   function updateTimer(){
-    updateDrawCountdown();
     if(!viewGame || viewGame.over || viewGame.phase !== 'draw' || !viewGame.deadline){ $('timer').textContent=(!viewGame || ['waiting','roundIntro'].includes(viewGame.phase))?'60s':'--'; $('timer').classList.remove('danger'); return; }
     const remain=Math.max(0, viewGame.deadline - gameNow()); const sec=Math.ceil(remain/1000); $('timer').textContent=sec+'s'; $('timer').classList.toggle('danger', sec<=5);
     if(remain<=0 && role==='host' && authGame && authGame.phase==='draw'){ authGame.phase='naming'; authGame.logs.unshift('★ 描画時間終了。ここからはカード名を入力して提出しよう。'); authGame.announce = { text:'NAME IT', cls:'event' }; broadcastState(); }
@@ -1510,6 +1656,57 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
     sfx('support');
     setTimeout(()=>{ o.classList.remove('show'); setTimeout(()=>o.classList.remove('godEvent'),220); },2200);
   }
+  const cinematicFx = (() => {
+    const c=$('cinematicFxCanvas');
+    if(!c) return {attack(){},impact(){}};
+    const g=c.getContext('2d',{alpha:true});
+    let particles=[], rings=[], raf=0, endAt=0, dpr=1;
+    const palettes={
+      fire:['#fff3a0','#ff9d18','#ff3a00'], water:['#e9ffff','#49dcff','#087dff'],
+      thunder:['#ffffff','#fff44f','#b8e9ff'], wind:['#effff9','#79ffd6','#44cdb7'],
+      earth:['#ffe1a0','#c7883b','#5e371a'], light:['#ffffff','#fff1a5','#ffd34b'],
+      shadow:['#e5a4ff','#8b18d4','#180026'], neutral:['#ffffff','#c9d5ec','#69758b']
+    };
+    function resize(){dpr=Math.min(2,window.devicePixelRatio||1);c.width=Math.max(1,innerWidth*dpr);c.height=Math.max(1,innerHeight*dpr);g.setTransform(dpr,0,0,dpr,0,0)}
+    resize(); addEventListener('resize',resize,{passive:true});
+    function rnd(a,b){return a+Math.random()*(b-a)}
+    function loop(now){
+      g.clearRect(0,0,innerWidth,innerHeight); g.globalCompositeOperation='lighter';
+      particles=particles.filter(p=>now-p.born<p.life);
+      for(const p of particles){const t=(now-p.born)/p.life, q=1-t; p.x+=p.vx; p.y+=p.vy; p.vx*=.986; p.vy*=.986; p.vy+=p.gravity||0; g.globalAlpha=Math.max(0,q)*p.alpha; g.strokeStyle=p.color; g.fillStyle=p.color; g.lineWidth=Math.max(.6,p.size*q); if(p.streak){g.beginPath();g.moveTo(p.x,p.y);g.lineTo(p.x-p.vx*8,p.y-p.vy*8);g.stroke()}else{g.beginPath();g.arc(p.x,p.y,Math.max(.5,p.size*q),0,Math.PI*2);g.fill()}}
+      rings=rings.filter(r=>now-r.born<r.life);
+      for(const r of rings){const t=(now-r.born)/r.life;g.globalAlpha=(1-t)*.78;g.strokeStyle=r.color;g.lineWidth=Math.max(1,10*(1-t));g.beginPath();g.arc(r.x,r.y,r.r+r.max*t,0,Math.PI*2);g.stroke()}
+      g.globalAlpha=1;g.globalCompositeOperation='source-over';
+      if(now<endAt||particles.length||rings.length){raf=requestAnimationFrame(loop)}else{c.classList.remove('active');cancelAnimationFrame(raf);raf=0}
+    }
+    function ensure(){c.classList.add('active'); if(!raf) raf=requestAnimationFrame(loop)}
+    function attack(element='neutral',from='left'){
+      const pal=palettes[element]||palettes.neutral, dir=from==='right'?-1:1;
+      const sx=from==='right'?innerWidth*.78:innerWidth*.22, sy=innerHeight*.5;
+      const tx=from==='right'?innerWidth*.22:innerWidth*.78;
+      const now=performance.now(); endAt=now+2200;
+      for(let i=0;i<115;i++){const speed=rnd(5,16);particles.push({x:sx+rnd(-30,30),y:sy+rnd(-70,70),vx:dir*speed,vy:rnd(-3.8,3.8),gravity:(element==='earth'?0.05:0),size:rnd(2,8),alpha:rnd(.45,1),color:pal[i%pal.length],born:now+rnd(0,240),life:rnd(650,1450),streak:element!=='earth'})}
+      rings.push({x:tx,y:sy,r:12,max:220,color:pal[1],born:now+610,life:700});rings.push({x:tx,y:sy,r:4,max:360,color:pal[0],born:now+720,life:850});
+      ensure();
+    }
+    function impact(element='neutral',from='left'){
+      const pal=palettes[element]||palettes.neutral, x=from==='right'?innerWidth*.22:innerWidth*.78, y=innerHeight*.5, now=performance.now();endAt=Math.max(endAt,now+1000);
+      for(let i=0;i<80;i++){const a=Math.random()*Math.PI*2,sp=rnd(3,14);particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,size:rnd(2,9),alpha:rnd(.5,1),color:pal[i%pal.length],born:now,life:rnd(500,1000),streak:true})}ensure();
+    }
+    return {attack,impact};
+  })();
+
+  function cinematicCardBeat(from='left'){
+    const zone=$('battleZone'); if(!zone)return;
+    const mine=$('myCardSlot')?.querySelector('.card'), opp=$('oppCardSlot')?.querySelector('.card');
+    const winner=from==='left'?mine:opp, loser=from==='left'?opp:mine;
+    zone.classList.remove('cinematicCharge','cinematicImpact'); void zone.offsetWidth; zone.classList.add('cinematicCharge');
+    winner?.classList.add('fxWinner'); loser?.classList.add('fxLoser');
+    $('cinematicVignette')?.classList.add('active');
+    setTimeout(()=>{zone.classList.add('cinematicImpact');cinematicFx.impact((viewGame?.lastClash?.battleDetails?.winnerElement)||'neutral',from)},760);
+    setTimeout(()=>{zone.classList.remove('cinematicCharge','cinematicImpact');winner?.classList.remove('fxWinner');loser?.classList.remove('fxLoser');$('cinematicVignette')?.classList.remove('active')},1900);
+  }
+
   function showAttributeAttack(element='neutral', from='left', damage=0){
     const fx=$('attributeAttackFx');
     const label=$('attributeAttackLabel');
@@ -1540,13 +1737,15 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
       fx.appendChild(p);
     }
     fx.classList.add('show');
+    cinematicFx.attack(normalized,from);
+    cinematicCardBeat(from);
     battleFlash();
     sfx(normalized==='light'?'win':'clash');
     setTimeout(()=>fx.classList.remove('show'),2100);
     setTimeout(()=>{fx.className='attributeAttackFx';fx.querySelectorAll('.particle').forEach(n=>n.remove());},2350);
   }
 
-  function battleFlash(){ document.body.classList.remove('shake','flash'); void document.body.offsetWidth; document.body.classList.add('shake','flash'); setTimeout(()=>document.body.classList.remove('shake','flash'),500); }
+  function battleFlash(){ document.body.classList.remove('shake','flash'); const zone=$('battleZone'); zone?.classList.remove('cinematicImpact'); void document.body.offsetWidth; document.body.classList.add('shake','flash'); zone?.classList.add('cinematicImpact'); setTimeout(()=>{document.body.classList.remove('shake','flash');zone?.classList.remove('cinematicImpact')},520); }
 
 
   function cpuArt(type, seed=0){
@@ -1566,41 +1765,44 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
       const power=Math.max(4,Math.floor(score/10)+3);
       const names={boost:'戦神の号令',barrier:'鋼鉄結界',heal:'天使の薬',curse:'黒呪の札',focus:'必中の眼',chaos:'神の悪戯'};
       const name=names[role];
-      const desc=describeCard({kind:'support',role});
+      const desc=({boost:`強烈な直接攻撃。`,barrier:`巨大な防御障壁。`,heal:`大量回復。`,curse:`強烈なダメージ＋防御破壊。`,focus:`攻防一体の切り札。`,chaos:`強烈なランダム効果。`})[role];
       return {kind:'support',name,score,role,rarity:score>=75?'EPIC':score>=55?'RARE':'COMMON',power,nameInfo:analyzeName(name,'support'),image:cpuArt('support',authGame.round),desc};
     }
     const roles=['attack','defend','heal','chaos'];
     let mrole=roles[Math.floor(Math.random()*roles.length)];
-    if(cpu.wins<authGame.host.wins && Math.random()<0.55) mrole='heal';
+    if(cpu.hp<28 && Math.random()<0.55) mrole='heal';
     const score=40+Math.floor(Math.random()*51);
     const power=Math.max(1,Math.ceil(score/10));
     const names={attack:'紅蓮獣バルガ',defend:'城塞亀グラン',heal:'聖樹獣ミリア',chaos:'虚無魔獣ノクス'};
     const name=names[mrole];
     let atk=Math.max(3,power+(mrole==='attack'?5:mrole==='chaos'?3:mrole==='defend'?2:1));
     let shield=Math.max(0,Math.floor(power/2)+(mrole==='defend'?6:mrole==='chaos'?2:1));
+    let healv=Math.max(0,Math.floor(power/3)+(mrole==='heal'?7:mrole==='chaos'?2:0));
     if(score>=80) atk+=3;
-    const desc=describeCard({kind:'monster'});
-    return {kind:'monster',name,score,role:mrole,rarity:score>=75?'EPIC':score>=55?'RARE':'COMMON',stats:{atk,shield},nameInfo:analyzeName(name,'monster'),image:cpuArt('monster',authGame.round),desc};
+    const desc=mrole==='attack'?`敵に${atk}ダメージ。`:mrole==='defend'?`防御${shield}を得て、敵に${Math.max(2,Math.floor(atk/2))}ダメージ。`:mrole==='heal'?`HPを${healv}回復し、敵に${Math.max(2,Math.floor(atk/2))}ダメージ。`:`カオス効果：大ダメージ / 回復 / 防御のいずれか。`;
+    return {kind:'monster',name,score,role:mrole,rarity:score>=75?'EPIC':score>=55?'RARE':'COMMON',stats:{atk,shield,heal:healv},nameInfo:analyzeName(name,'monster'),image:cpuArt('monster',authGame.round),desc};
   }
   function startCpuGame(){
     cleanupPeer(); gameMode='cpu'; role='host'; remoteReady=true; scheduledStart=null;
     lastFxKey=''; lastGodEventKey=''; aiVisual=null; aiRoundToken=''; authGame={round:1,phase:'waiting',startAt:null,over:false,deadline:null,fieldEvent:chooseEvent(),host:newSide('あなた'),guest:newSide('CPU'),logs:['★ CPU対戦準備完了。GAME STARTで開始。'],lastClash:null,winner:null,announce:null}; if(authGame.fieldEvent.id!=='calm') authGame.logs.unshift(`★ 神イベント発生：「${authGame.fieldEvent.name}」 ${authGame.fieldEvent.desc}`);
-    viewGame=publicStateFor('host'); mySubmitted=false; earlyFinished=false; clearCanvas(); setSelectedType('monster');
+    viewGame=publicStateFor('host'); mySubmitted=false; earlyFinished=false; localRoundSeen=null; aiAnalyzing=false; clearCanvas(); setSelectedType('monster');
     $('cpuStartBtn').disabled=true; $('cpuStopBtn').disabled=false; setStatus('CPU対戦中','ready'); setBgmMood('draw'); renderBattle();
   }
   function stopCpuGame(){
     if(gameMode!=='cpu') return;
-    gameMode='none'; role=null; remoteReady=false; scheduledStart=null; authGame=null; viewGame=null; mySubmitted=false; earlyFinished=false; stopLocalTimer(); clearCanvas(); setSelectedType('monster');
+    gameMode='none'; role=null; remoteReady=false; scheduledStart=null; authGame=null; viewGame=null; mySubmitted=false; earlyFinished=false; localRoundSeen=null; aiAnalyzing=false; aiVisual=null; aiRoundToken=''; stopLocalTimer(); clearCanvas(); setSelectedType('monster');
     $('cpuStartBtn').disabled=false; $('cpuStopBtn').disabled=true; setStatus('未接続','wait'); renderBattle();
   }
   function cpuPlayerSubmit(card){
-    if(gameMode!=='cpu' || !authGame || authGame.over || !['draw','naming'].includes(authGame.phase)) return;
-    hostSubmit('host',card);
-    if(!authGame || authGame.over) return;
+    if(gameMode!=='cpu' || !authGame || authGame.over || !['draw','naming'].includes(authGame.phase)) return false;
+    const round=authGame.round;
+    const accepted=hostSubmit('host',card,round);
+    if(!accepted || !authGame || authGame.over) return accepted;
     if(['draw','naming'].includes(authGame.phase) && !authGame.guest.submitted){
-      const cpuCard=makeCpuCard(), cpuGame=authGame, cpuRound=authGame.round;
-      setTimeout(()=>{ if(gameMode==='cpu' && authGame===cpuGame && authGame.round===cpuRound && ['draw','naming'].includes(authGame.phase) && !authGame.guest.submitted) hostSubmit('guest',cpuCard); },350);
+      const cpuCard=makeCpuCard();
+      setTimeout(()=>{ if(gameMode==='cpu' && authGame && authGame.round===round && ['draw','naming'].includes(authGame.phase) && !authGame.guest.submitted) hostSubmit('guest',cpuCard,round); },350);
     }
+    return true;
   }
   $('cpuStartBtn').onclick=startCpuGame;
   $('cpuStopBtn').onclick=stopCpuGame;
@@ -1608,13 +1810,11 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
   $('rematchBtn').onclick = () => { if(gameMode==='cpu') startCpuGame(); else if(role==='host') startHostGame(); else send({type:'rematch'}); };
 
   function setInputLocks(){
-    updateDrawCountdown();
     const draw = drawingAllowed();
     const naming = namingAllowed();
     $('canvasWrap').classList.toggle('locked', !draw);
     $('cardName').disabled = !naming;
     $('submitBtn').disabled = !canSubmit();
-    $('submitBtn').hidden = !!viewGame?.my?.hasSurvivor;
     $('finishDrawingBtn').disabled = !draw;
     $('clearBtn').disabled = !draw; if($('bucketBtn')) $('bucketBtn').disabled = !draw; updateUndoButton();
     $('monsterTypeBtn').disabled = !(draw || naming);
@@ -1629,14 +1829,14 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
     if(details.type==='monsterClash'){
       const duel=document.createElement('div');
       duel.className='powerDuel';
-      duel.innerHTML=`<div class="powerSide"><div class="powerLabel">YOUR BATTLE POWER</div><div class="powerNum">${details.hostPower}</div></div><div class="powerVs">−</div><div class="powerSide"><div class="powerLabel">OPPONENT BATTLE POWER</div><div class="powerNum">${details.guestPower}</div></div>`;
+      duel.innerHTML=`<div class="powerSide"><div class="powerLabel">YOUR FINAL ATK</div><div class="powerNum">${details.hostPower}</div></div><div class="powerVs">−</div><div class="powerSide"><div class="powerLabel">OPPONENT FINAL ATK</div><div class="powerNum">${details.guestPower}</div></div>`;
       box.appendChild(duel);
     }
     const all=[...(details.hostEffects||[]).map(x=>({...x,text:'自分: '+x.text})),...(details.guestEffects||[]).map(x=>({...x,text:'相手: '+x.text}))];
     all.forEach((e,i)=>{const row=document.createElement('div');row.className='effectRow '+(e.kind||'');row.style.animationDelay=(i*70)+'ms';row.innerHTML=`<span class="fxIcon">${e.icon||'✦'}</span><span>${escapeHTML(e.text)}</span>`;box.appendChild(row);});
     if(details.type==='monsterClash'){
       const result=document.createElement('div');result.className='effectRow '+(details.winner==='draw'?'attr':details.winner==='host'?'good':'bad');
-      result.innerHTML=`<span class="fxIcon">${details.winner==='draw'?'⚖️':details.winner==='host'?'🏆':'💀'}</span><span>${details.winner==='draw'?'戦闘力が同じ。DRAW、勝利数加算なし。':`戦闘力差 ${details.diff}。勝者に1勝！`}</span>`;
+      result.innerHTML=`<span class="fxIcon">${details.winner==='draw'?'⚖️':details.winner==='host'?'🏆':'💀'}</span><span>${details.winner==='draw'?'攻撃力が同じ。両者ノーダメージ。':`攻撃力差 ${details.diff} が敗者のHPダメージ！ 勝者はノーダメージ。`}</span>`;
       box.appendChild(result);
     }
   }
@@ -1649,8 +1849,8 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
       updateUI(100,0,100,0); $('roundNo').textContent='1'; $('phaseLabel').textContent='接続待ち'; $('submitState').textContent='まずオンライン接続してください。'; $('mySupportLeft').textContent=String(SUPPORT_LIMIT); $('oppSupportLeft').textContent=String(SUPPORT_LIMIT); $('fieldEventLabel').textContent='接続待ち'; $('myCardSlot').className='hiddenCard'; $('myCardSlot').innerHTML='あなたのカード<br>まだ未提出'; $('oppCardSlot').className='hiddenCard'; $('oppCardSlot').innerHTML='相手のカード<br>まだ未提出'; $('rematchBtn').disabled=true; $('battleBanner').className='banner'; $('battleReadyRow').className='battleReadyRow'; $('battleReadyStatus').textContent=''; $('battleEffects').innerHTML=''; $('log').innerHTML='<div class="logline">接続後、ホストのGAME STARTで開始。</div>'; stopLocalTimer(); setSelectedType('monster'); setInputLocks(); refreshPreview(); updateTimer(); return;
     }
     document.querySelector('.arenaPanel')?.classList.add('matchActive');
-    if(localRoundSeen !== `${viewGame.startAt}:${viewGame.round}`){
-      localRoundSeen = `${viewGame.startAt}:${viewGame.round}`;
+    if(localRoundSeen !== viewGame.round){
+      localRoundSeen = viewGame.round;
       // 新ラウンドではローカルの作画状態も必ず同期し直す。
       // 特に敗者（survivorなし）は、前ラウンドの submitted / earlyFinished / AI 状態が
       // ブラウザ側に残って描画不能になることがないよう強制リセットする。
@@ -1666,7 +1866,9 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
       }
       setTimeout(()=>{ const grid=document.querySelector('.grid'); if(grid) grid.scrollIntoView({behavior:'smooth',block:'start'}); },140);
     }
-    // 提出状態はホストの確定値を使う。新規提出もsurvivorも同じ扱い。
+    // サーバー側 submitted を唯一の正として同期する。
+    // survivor の有無と『このラウンドで提出済みか』は別状態。DRAW後や敗北後に
+    // 新しく提出したカードを未提出へ巻き戻さない。
     mySubmitted = !!viewGame.mySubmitted;
     if(viewGame.announce && viewGame.announceToken !== lastAnnounceToken){ lastAnnounceToken = viewGame.announceToken; announce(viewGame.announce.text, viewGame.announce.cls || 'event'); }
     const godKey = viewGame.round+'-'+(viewGame.fieldEvent?.id || viewGame.fieldEvent?.name || 'none');
@@ -1674,11 +1876,8 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
       lastGodEventKey = godKey;
       setTimeout(()=>{ if(viewGame && viewGame.round+'-'+(viewGame.fieldEvent?.id || viewGame.fieldEvent?.name || 'none')===godKey) showGodEvent(viewGame.fieldEvent); },950);
     }
-    updateUI(0,viewGame.my.shield,0,viewGame.opp.shield,viewGame.my.wins||0,viewGame.opp.wins||0);
-    for(const [id,side] of [['pState',viewGame.my],['eState',viewGame.opp]]){
-      if($(id))$(id).textContent='次戦：強化 +'+(side.nextBoost||0)+' / 防御 +'+(side.shield||0)+' / 弱体 -'+(side.nextWeaken||0);
-    }
-    $('mySupportLeft').textContent=String(SUPPORT_LIMIT - viewGame.my.supportUsed); $('oppSupportLeft').textContent=String(SUPPORT_LIMIT - viewGame.opp.supportUsed);
+    updateUI(viewGame.my.hp,viewGame.my.shield,viewGame.opp.hp,viewGame.opp.shield,viewGame.my.wins||0,viewGame.opp.wins||0);
+    $('mySupportLeft').textContent=String(Math.max(0,SUPPORT_LIMIT - viewGame.my.supportUsed)); $('oppSupportLeft').textContent=String(Math.max(0,SUPPORT_LIMIT - viewGame.opp.supportUsed));
     $('fieldEventLabel').textContent = viewGame.fieldEvent && viewGame.fieldEvent.id!=='calm' ? `${viewGame.fieldEvent.name} — ${viewGame.fieldEvent.desc}` : '神イベントなし';
     if(selectedType==='support' && !canChooseSupport()) setSelectedType('monster'); else setSelectedType(selectedType);
     $('roundNo').textContent=String(viewGame.round); $('rematchBtn').disabled=!viewGame.over;
@@ -1690,10 +1889,6 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
     else if(viewGame.phase==='naming'){ setBgmMood('idle'); setTimeout(ensureAiAnalysis,0); $('phaseLabel').textContent='名付け・提出'; $('submitState').textContent=viewGame.mySubmitted?'提出済み。自分のカードステータスを確認しながら相手を待てます。':'カード名を入力して提出しよう。'; $('battleBanner').className='banner'; stopLocalTimer(); $('timer').textContent='0s'; $('timer').classList.add('danger'); }
     else if(viewGame.phase==='reveal'){ setBgmMood('idle'); $('phaseLabel').textContent='カード鑑賞'; $('submitState').textContent='両者のカード公開！ 時間制限なし。イラスト・名前・ステータスをじっくり見て、準備ができたらBATTLE READY。'; $('battleBanner').textContent='CARD REVEAL — LOOK & REACT!'; $('battleBanner').className='banner show'; stopLocalTimer(); } else if(viewGame.phase==='standby'){ setBgmMood('idle'); $('phaseLabel').textContent='スタンバイ'; $('submitState').textContent='STANDBY... まもなくバトル開始。'; $('battleBanner').textContent='STANDBY...'; $('battleBanner').className='banner show'; stopLocalTimer(); } else if(viewGame.phase==='battleIntro'){ setBgmMood('battle'); $('phaseLabel').textContent='バトル開始'; $('submitState').textContent='BATTLE!!'; $('battleBanner').textContent='BATTLE!!'; $('battleBanner').className='banner show'; stopLocalTimer(); } else if(viewGame.phase==='roundEnd'){ setBgmMood('idle'); $('phaseLabel').textContent='結果確認'; const outcome=roundOutcomeForMe(viewGame.lastClash); $('submitState').textContent=outcome==='win'?'このラウンドはあなたの勝ち！ 勝利数が1つ加算されます。':outcome==='lose'?'このラウンドはあなたの負け。次のラウンドで取り返そう。':'このラウンドは引き分け。勝利数は加算されません。'; $('battleBanner').textContent=outcome==='win'?`WIN!  ROUND ${viewGame.round}`:outcome==='lose'?`LOST!  ROUND ${viewGame.round}`:`DRAW!  ROUND ${viewGame.round}`; $('battleBanner').className='banner show '+(outcome==='win'?'resultWin':outcome==='lose'?'resultLose':'resultDraw'); stopLocalTimer(); } else if(viewGame.phase==='cardVanish'){ setBgmMood('idle'); $('phaseLabel').textContent='カード消滅'; $('submitState').textContent='敗北したモンスターと使用済みサポートだけが消滅します。勝ったモンスターは盤面に残って次ラウンドへ続投します。'; $('battleBanner').textContent='DEFEATED CARD DESTROYED → NEXT ROUND'; $('battleBanner').className='banner show'; stopLocalTimer(); } else { setBgmMood('battle'); $('phaseLabel').textContent='判定中'; $('submitState').textContent='両者提出済み。判定中…'; $('battleBanner').className='banner'; stopLocalTimer(); }
 
-    if(viewGame.my.hasSurvivor && ['draw','naming'].includes(viewGame.phase)){
-      $('phaseLabel').textContent='続投・相手待ち';
-      $('submitState').textContent='前ラウンド勝者：このカードで続投（自動提出済み）。相手の新しいカードを待っています。';
-    }
     if(viewGame.phase==='reveal'){
       $('battleReadyRow').className='battleReadyRow show';
       $('battleReadyBtn').disabled=!!viewGame.myBattleReady;
@@ -1714,8 +1909,10 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
     if(oppDisplay){ $('oppCardSlot').className=''; $('oppCardSlot').innerHTML=cardHTML(oppDisplay); } else { $('oppCardSlot').className='hiddenCard'; $('oppCardSlot').innerHTML=viewGame.oppSubmitted?'相手は提出済み<br>公開は同時！':'相手のカード<br>まだ未提出'; }
     if(['reveal','standby','battleIntro'].includes(viewGame.phase)){ const a=$('myCardSlot').querySelector('.card'); const b=$('oppCardSlot').querySelector('.card'); if(a)a.classList.add('showcaseCard'); if(b)b.classList.add('showcaseCard'); }
     if(viewGame.phase==='cardVanish'){
-      const myCardEl=$('myCardSlot').querySelector('.card'); if(myCardEl) myCardEl.classList.add('cardVanish');
-      const oppCardEl=$('oppCardSlot').querySelector('.card'); if(oppCardEl) oppCardEl.classList.add('cardVanish');
+      const myCardEl=$('myCardSlot').querySelector('.card');
+      const oppCardEl=$('oppCardSlot').querySelector('.card');
+      if(myCardEl && !viewGame.my.hasSurvivor) myCardEl.classList.add('cardVanish');
+      if(oppCardEl && !viewGame.opp.hasSurvivor) oppCardEl.classList.add('cardVanish');
     }
 
     renderBattleEffects(viewGame.lastClash ? viewGame.lastClash.battleDetails : null);
@@ -1762,14 +1959,7 @@ body:after{content:"";position:fixed;left:50%;top:-360px;width:760px;height:760p
   $('galleryModal').addEventListener('click',e=>{if(e.target===$('galleryModal'))closeGallery();});
   $('galleryDetailCloseBtn').onclick=closeGalleryDetail;
   $('galleryDetail').addEventListener('click',e=>{if(e.target===$('galleryDetail'))closeGalleryDetail();});
-  $('galleryFavoriteBtn').onclick=()=>toggleGalleryFavorite(galleryDetailId);
-  $('galleryClearBtn').onclick=()=>{
-    const list=loadGallery();
-    if(!list.some(entry=>entry.favorite!==true))return;
-    if(confirm('お気に入り以外のカードを削除しますか？ ★お気に入りは残ります。')){
-      if(persistGallery(list.filter(entry=>entry.favorite===true))){renderGallery();closeGalleryDetail();}
-    }
-  };
+  $('galleryClearBtn').onclick=()=>{if(confirm('保存したカードをすべて削除しますか？')){try{localStorage.removeItem(GALLERY_KEY);}catch(e){} renderGallery(); closeGalleryDetail();}};
   $('rulesCloseBtn').onclick=()=>$('rulesModal').classList.remove('show');
   $('rulesModal').addEventListener('click',e=>{if(e.target===$('rulesModal'))$('rulesModal').classList.remove('show');});
   $('menuBgmBtn').onclick=()=>{if(typeof setBgmEnabled==='function')setBgmEnabled(!bgmEnabled);};
